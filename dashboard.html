@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard | หลังบ้าน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; background-color: #F3F4F6; }
+    .hidden-section { display: none !important; }
+  </style>
+</head>
+<body class="text-gray-800">
+
+  <!-- หน้า Login -->
+  <div id="login-section" class="min-h-screen flex items-center justify-center bg-blue-600 px-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+      <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">Staff System Login</h2>
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Username (รหัสนิสิต)</label>
+          <input type="text" id="username" required class="w-full border p-3 rounded-xl bg-gray-50 outline-none focus:ring-2">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1">Password</label>
+          <input type="password" id="password" required class="w-full border p-3 rounded-xl bg-gray-50 outline-none focus:ring-2">
+        </div>
+        <button type="submit" id="loginBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
+          เข้าสู่ระบบ
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- หน้า Dashboard -->
+  <div id="dashboard-section" class="hidden-section min-h-screen flex flex-col">
+    <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold text-blue-600" id="dash-title">Dashboard</h1>
+        <p class="text-sm text-gray-500" id="dash-subtitle"></p>
+      </div>
+      <button onclick="logout()" class="text-red-500 font-bold hover:underline">ออกจากระบบ</button>
+    </nav>
+
+    <main class="flex-grow p-4 md:p-8">
+      <!-- ข้อมูลสถิติ -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
+          <p class="text-sm text-gray-500">ผู้สมัครทั้งหมด</p>
+          <h3 class="text-2xl font-bold" id="stat-total">0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-yellow-500">
+          <p class="text-sm text-gray-500">รอพิจารณา (อันดับคุณ)</p>
+          <h3 class="text-2xl font-bold" id="stat-pending">0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-green-500">
+          <p class="text-sm text-gray-500">รับแล้ว</p>
+          <h3 class="text-2xl font-bold" id="stat-accepted">0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-red-500">
+          <p class="text-sm text-gray-500">ไม่ผ่านการพิจารณา</p>
+          <h3 class="text-2xl font-bold" id="stat-rejected">0</h3>
+        </div>
+      </div>
+
+      <!-- ตารางรายชื่อผู้สมัคร -->
+      <div class="bg-white rounded-xl shadow overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead class="bg-gray-100 text-gray-600">
+            <tr>
+              <th class="p-4">รหัสนิสิต</th>
+              <th class="p-4">ชื่อ-สกุล</th>
+              <th class="p-4">สาขา</th>
+              <th class="p-4">เหตุผลที่สมัคร</th>
+              <th class="p-4">ช่องทางติดต่อ</th>
+              <th class="p-4 text-center">การตัดสินใจ</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-gray-200">
+            <!-- ดึงข้อมูลด้วย JS มาใส่ตรงนี้ -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ==========================================
+    // ใส่ URL ของเว็บแอป (GAS) อันเดียวกันกับฟอร์มหน้าแรก
+    // ==========================================
+    const GAS_URL = 'ใส่_URL_WEB_APP_ตรงนี้_เช่นกัน'; 
+    let currentUser = null;
+
+    function handleLogin(e) {
+      e.preventDefault();
+      document.getElementById('loginBtn').innerText = 'กำลังตรวจสอบ...';
+      
+      const payload = {
+        action: 'login',
+        payload: {
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        }
+      };
+
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          currentUser = data.userData;
+          document.getElementById('login-section').classList.add('hidden-section');
+          document.getElementById('dashboard-section').classList.remove('hidden-section');
+          
+          document.getElementById('dash-title').innerText = currentUser.role === 'admin' ? 'Admin Dashboard' : 'Head Dashboard';
+          document.getElementById('dash-subtitle').innerText = currentUser.role === 'admin' ? 'ประธานโครงการ' : `${currentUser.project.toUpperCase()} - ${currentUser.dept}`;
+          
+          loadDashboardData();
+        } else {
+          alert('เข้าสู่ระบบล้มเหลว: ' + data.message);
+          document.getElementById('loginBtn').innerText = 'เข้าสู่ระบบ';
+        }
+      });
+    }
+
+    function loadDashboardData() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>';
+
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getDashboardData', payload: { username: currentUser.username } })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // อัปเดตสถิติ
+          document.getElementById('stat-total').innerText = data.stats.total;
+          // ถ้าเป็น head ให้นับเฉพาะ pending ที่โผล่มาให้ตัวเองเห็น
+          document.getElementById('stat-pending').innerText = data.data.filter(d => d.status.includes('Pending')).length;
+          document.getElementById('stat-accepted').innerText = data.stats.accepted;
+          document.getElementById('stat-rejected').innerText = data.stats.rejected;
+
+          tbody.innerHTML = '';
+          if (data.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">ไม่มีผู้สมัครในคิวของคุณขณะนี้</td></tr>';
+            return;
+          }
+
+          data.data.forEach(row => {
+            // เลือกดึงเหตุผลตามสถานะลำดับ (เพื่อให้ Head อ่านเหตุผลที่ตรงกับฝ่ายตัวเอง)
+            let currentReason = row.status === 'Pending_Rank1' ? row.reason1 : (row.status === 'Pending_Rank2' ? row.reason2 : row.reason3);
+            if(currentUser.role === 'admin') currentReason = `1: ${row.reason1}`; // Admin เห็นอันดับ 1 เป็นหลัก
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="p-4">${row.studentId}</td>
+              <td class="p-4 font-semibold text-blue-600">${row.name}</td>
+              <td class="p-4">${row.branch}</td>
+              <td class="p-4 max-w-xs truncate" title="${currentReason}">${currentReason}</td>
+              <td class="p-4 text-xs">📞 ${row.phone}<br>🟢 ${row.lineId}<br>📷 ${row.ig || '-'}</td>
+              <td class="p-4 text-center">
+                ${row.status.includes('Pending') ? `
+                  <button onclick="updateDecision('${row.sheetName}', ${row.rowNumber}, 'accept')" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">รับ</button>
+                  <button onclick="updateDecision('${row.sheetName}', ${row.rowNumber}, 'reject')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">ปฏิเสธ</button>
+                ` : `<span class="px-2 py-1 bg-gray-200 rounded text-gray-600 text-xs">${row.status}</span>`}
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      });
+    }
+
+    function updateDecision(sheetName, rowNumber, actionType) {
+      if (!confirm(`ยืนยันการ ${actionType === 'accept' ? 'รับ' : 'ปฏิเสธ'} สตาฟคนนี้?`)) return;
+
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ 
+          action: 'updateStatus', 
+          payload: { sheetName, rowNumber, actionType } 
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          loadDashboardData(); // โหลดตารางใหม่หลังกด
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + data.message);
+        }
+      });
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('loginForm').reset();
+      document.getElementById('dashboard-section').classList.add('hidden-section');
+      document.getElementById('login-section').classList.remove('hidden-section');
+    }
+  </script>
+</body>
+</html>
