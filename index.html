@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Recruitment | สหเวชศาสตร์ จุฬาฯ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ฟอนต์ภาษาไทยและอังกฤษ -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; background-color: #4A72FF; color: white; margin: 0; min-height: 100vh; overflow-x: hidden; }
+    .cursive-title { font-family: 'Pacifico', cursive; color: #FFD700; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .glass-btn {
+      background: rgba(255, 255, 255, 0.9); color: #4A72FF; font-weight: 600;
+      border-radius: 9999px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .glass-btn:hover { transform: translateY(-3px); background: #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .hidden-section { display: none !important; }
+    /* พื้นหลังทุ่งหญ้าจำลองแบบในรูป */
+    .bg-grass {
+      background: linear-gradient(to bottom, transparent 60%, #4CAF50 60%);
+    }
+  </style>
+</head>
+<body class="bg-grass flex flex-col h-screen">
+
+  <!-- Header -->
+  <nav class="flex justify-between items-center p-4 md:p-6 w-full z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+        <span class="text-blue-500 font-bold text-xs">SMO</span>
+      </div>
+      <div class="text-xs md:text-sm">
+        สโมสรนิสิตคณะสหเวชศาสตร์<br>จุฬาลงกรณ์มหาวิทยาลัย
+      </div>
+    </div>
+    <div class="flex gap-4 text-sm font-semibold">
+      <a href="#" class="hover:underline">Head</a>
+      <a href="#" class="hover:underline">Admin</a>
+    </div>
+  </nav>
+
+  <!-- หน้าแรก (Landing) -->
+  <main id="landing-page" class="flex-grow flex flex-col items-center justify-center text-center z-10 px-4 -mt-20">
+    <h1 class="text-6xl md:text-8xl cursive-title mb-2">Staff Recruitment</h1>
+    <p class="text-lg md:text-xl mb-10 tracking-widest font-light">27 - 31 กรกฎาคม 2569</p>
+
+    <div class="flex flex-col md:flex-row gap-4 w-full max-w-3xl justify-center mb-6">
+      <button onclick="openForm('camp')" class="glass-btn px-6 py-3 text-lg w-full md:w-auto flex items-center justify-center gap-2">
+        ⛺ ค่ายเพื่อนกาวน์ครั้งที่ 21
+      </button>
+      <button onclick="showQuizModal()" class="glass-btn px-6 py-3 text-lg w-full md:w-auto flex items-center justify-center gap-2">
+        📝 ตอบปัญหาวิชาการสหเวชศาสตร์ ครั้งที่ 2
+      </button>
+    </div>
+    
+    <button class="glass-btn px-6 py-3 text-lg w-full max-w-sm flex items-center justify-center gap-2">
+      📋 ตรวจสอบสถานะการสมัคร
+    </button>
+  </main>
+
+  <!-- ฟอร์มสมัคร (ซ่อนไว้ตอนแรก) -->
+  <section id="form-page" class="hidden-section flex-grow z-10 px-4 py-8 bg-white text-gray-800 w-full max-w-4xl mx-auto rounded-t-3xl shadow-2xl mt-10">
+    <div class="flex justify-between items-center mb-6">
+      <button onclick="goBack()" class="text-blue-500 font-bold hover:underline">← กลับ</button>
+      <h2 id="form-title" class="text-2xl font-bold text-blue-600">ฟอร์มสมัครสตาฟ</h2>
+      <div></div>
+    </div>
+
+    <form id="staffForm" onsubmit="submitData(event)" class="space-y-6">
+      <!-- ข้อมูลส่วนตัว -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" id="name" placeholder="ชื่อ-นามสกุล" required class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none">
+        <input type="number" id="studentId" placeholder="เลขประจำตัวนิสิต (10 หลัก)" required class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none">
+        
+        <select id="branch" required onchange="updateDepartments()" class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none">
+          <option value="">-- เลือกสาขาในคณะ --</option>
+          <option value="MT">MT (เทคนิคการแพทย์)</option>
+          <option value="PT">PT (กายภาพบำบัด)</option>
+          <option value="ND">ND (โภชนาการและการกำหนดอาหาร)</option>
+          <option value="RT">RT (รังสีเทคนิค)</option>
+        </select>
+        <input type="number" id="phone" placeholder="เบอร์โทรศัพท์ (ระวังเลข 0 นำหน้า)" required class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none">
+        
+        <div class="flex flex-col gap-2">
+          <input type="text" id="lineId" placeholder="LINE ID" required class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none">
+          <div class="flex gap-4 text-sm px-2">
+            <label><input type="radio" name="addVia" value="LINE ID" required> แอดผ่าน LINE ID</label>
+            <label><input type="radio" name="addVia" value="เบอร์โทร"> แอดผ่านเบอร์โทร</label>
+          </div>
+        </div>
+        <input type="text" id="ig" placeholder="Instagram Account (ถ้ามี)" class="border p-3 rounded-xl bg-gray-50 focus:ring-2 outline-none h-[50px]">
+      </div>
+
+      <!-- เลือกฝ่าย -->
+      <div class="bg-blue-50 p-5 rounded-2xl space-y-4">
+        <div>
+          <label class="font-bold text-blue-800">อันดับ 1 (บังคับ)</label>
+          <select id="rank1" required class="dept-select w-full border p-3 rounded-xl mt-1"></select>
+          <input type="text" id="reason1" placeholder="เหตุผลที่สมัครอันดับ 1" required class="w-full border p-3 rounded-xl mt-2">
+        </div>
+        <div>
+          <label class="font-bold text-blue-800">อันดับ 2 (ไม่บังคับ)</label>
+          <select id="rank2" class="dept-select w-full border p-3 rounded-xl mt-1"></select>
+          <input type="text" id="reason2" placeholder="เหตุผลที่สมัครอันดับ 2 (ถ้ามี)" class="w-full border p-3 rounded-xl mt-2">
+        </div>
+        <div>
+          <label class="font-bold text-blue-800">อันดับ 3 (ไม่บังคับ)</label>
+          <select id="rank3" class="dept-select w-full border p-3 rounded-xl mt-1"></select>
+          <input type="text" id="reason3" placeholder="เหตุผลที่สมัครอันดับ 3 (ถ้ามี)" class="w-full border p-3 rounded-xl mt-2">
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg text-lg">
+        ยืนยันการสมัคร
+      </button>
+    </form>
+  </section>
+
+  <!-- Modal แจ้งเตือนฝ่ายวิชาการตอบปัญหา -->
+  <div id="quiz-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden-section z-50 px-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl text-gray-800">
+      <h2 class="text-xl font-bold mb-4 text-red-600">⚠️ ชี้แจงการจัดทำข้อสอบและฝ่ายที่เกี่ยวข้อง</h2>
+      <div class="text-sm space-y-2 mb-6 h-64 overflow-y-auto bg-gray-50 p-4 rounded-xl">
+        <p>การแข่งขันแบ่งออกเป็น 4 รอบการแข่งขัน ดังนี้</p>
+        <ul class="list-decimal pl-5">
+          <li>รอบคัดเลือก ใช้ข้อสอบรายวิชาทั่วไป (เคมี ฟิสิกส์ ชีววิทยา)</li>
+          <li>รอบ 50 ทีม ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
+          <li>รอบ 10 ทีม ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
+          <li>รอบชิงชนะเลิศ 5 ทีม ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
+        </ul>
+        <p class="font-bold mt-2">**โดยฝ่ายผลิตข้อสอบรับผิดชอบรายวิชาทั่วไปในรอบคัดเลือก**</p>
+        <p class="font-bold">**ฝ่ายวิชาการสาขารับผิดชอบข้อสอบประยุกต์เชิงสหเวชศาสตร์**</p>
+        <p class="text-red-500 mt-2">หากต้องการจัดทำทั้งคู่ ให้ลงสมัครฝ่ายผลิตข้อสอบและฝ่ายวิชาการควบคู่กัน!</p>
+      </div>
+      <button onclick="acceptQuizAndOpenForm()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">รับทราบ</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 2. เอาลิงก์ Web App ที่ก๊อปมาจาก GAS มาใส่ตรงนี้
+    // ==========================================
+    const GAS_URL = 'ใส่_URL_WEB_APP_ตรงนี้';
+
+    let currentProject = '';
+
+    const depts = {
+      camp: ['ฝ่ายบรรณาธิการ', 'ฝ่ายสิทธิประโยชน์', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์และถ่ายภาพ', 'ฝ่ายเสื้อ', 'ฝ่ายของที่ระลึกและขายของ', 'ฝ่ายศิลป์', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายประสาน', 'ฝ่ายบายศรี', 'ฝ่ายสถานที่', 'ฝ่ายรักษาความปลอดภัยและ VR', 'ฝ่ายแสงเสียง', 'ฝ่ายสวัสดิการ', 'ฝ่ายพี่บ้าน', 'ฝ่ายกิจกรรมและเนื้อหา', 'ฝ่ายพยาบาล', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'],
+      quiz: ['ฝ่ายสิทธิประโยชน์', 'ฝ่ายบรรณาธิการ', 'ฝ่ายพิธีการ', 'ฝ่าย AP Timer', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายรางวัลและของที่ระลึก', 'ฝ่ายสวัสดิการและพยาบาล', 'ฝ่ายสถานที่', 'ฝ่ายแสงเสียง', 'ฝ่ายปฏิคม', 'ฝ่ายนิทรรศการ', 'ฝ่ายออกแบบการแข่งขัน', 'ฝ่ายคุมสอบและตรวจข้อสอบ', 'ฝ่ายผลิตข้อสอบ', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT']
+    };
+
+    function showQuizModal() {
+      document.getElementById('quiz-modal').classList.remove('hidden-section');
+    }
+
+    function acceptQuizAndOpenForm() {
+      document.getElementById('quiz-modal').classList.add('hidden-section');
+      openForm('quiz');
+    }
+
+    function openForm(project) {
+      currentProject = project;
+      document.getElementById('landing-page').classList.add('hidden-section');
+      document.getElementById('form-page').classList.remove('hidden-section');
+      document.getElementById('form-title').innerText = project === 'camp' ? 'สมัครสตาฟค่ายเพื่อนกาวน์' : 'สมัครสตาฟตอบปัญหาวิชาการ';
+      document.body.classList.remove('bg-grass');
+      updateDepartments(); // โหลดฝ่ายตอนเปิดหน้า
+    }
+
+    function goBack() {
+      document.getElementById('form-page').classList.add('hidden-section');
+      document.getElementById('landing-page').classList.remove('hidden-section');
+      document.body.classList.add('bg-grass');
+    }
+
+    // ฟังก์ชันกรองฝ่ายตามสาขา (กฎข้อ 7)
+    function updateDepartments() {
+      const branch = document.getElementById('branch').value;
+      const selects = document.querySelectorAll('.dept-select');
+      const projectDepts = depts[currentProject];
+
+      selects.forEach((select, index) => {
+        select.innerHTML = index === 0 ? '<option value="">-- เลือกฝ่าย --</option>' : '<option value="">-- ไม่ประสงค์สมัคร --</option>';
+        
+        projectDepts.forEach(dept => {
+          // ถ้าเป็นฝ่ายวิชาการ ต้องเช็คสาขา
+          if (dept.includes('วิชาการ')) {
+            if (branch && dept.includes(branch)) {
+              select.innerHTML += `<option value="${dept}">${dept}</option>`;
+            }
+          } else {
+            select.innerHTML += `<option value="${dept}">${dept}</option>`;
+          }
+        });
+      });
+    }
+
+    // ฟังก์ชันกดส่งข้อมูล
+    function submitData(e) {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.innerText = 'กำลังส่งข้อมูล...';
+      submitBtn.disabled = true;
+
+      const payload = {
+        action: 'submitForm',
+        payload: {
+          project: currentProject,
+          name: document.getElementById('name').value,
+          studentId: document.getElementById('studentId').value,
+          branch: document.getElementById('branch').value,
+          phone: document.getElementById('phone').value,
+          lineId: document.getElementById('lineId').value,
+          addVia: document.querySelector('input[name="addVia"]:checked').value,
+          ig: document.getElementById('ig').value,
+          rank1: document.getElementById('rank1').value,
+          reason1: document.getElementById('reason1').value,
+          rank2: document.getElementById('rank2').value,
+          reason2: document.getElementById('reason2').value,
+          rank3: document.getElementById('rank3').value,
+          reason3: document.getElementById('reason3').value,
+        }
+      };
+
+      // ยิงข้อมูลไปที่ Google Apps Script โดยใช้ text/plain เพื่อกันติด CORS
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('ส่งใบสมัครสำเร็จ!');
+          document.getElementById('staffForm').reset();
+          goBack();
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + data.message);
+        }
+      })
+      .catch(error => {
+        alert('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ โปรดลองอีกครั้ง');
+      })
+      .finally(() => {
+        submitBtn.innerText = 'ยืนยันการสมัคร';
+        submitBtn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
