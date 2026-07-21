@@ -432,12 +432,12 @@
 
   <header class="bg-white/70 backdrop-blur-md sticky top-0 z-30 border-b border-purple-100 shadow-sm">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center max-w-6xl">
-      <div onclick="changePage('landing')" class="cursor-pointer flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center shadow-md">
-          <span class="text-white font-bold text-sm tracking-wider">AHS</span>
-        </div>
-        <h1 class="text-xl md:text-2xl font-bold text-slate-800 hidden sm:block">Staff Recruitment</h1>
+      
+      <!-- ส่วนที่ถูกแก้ไข: ลบโลโก้ออก และลบ hidden sm:block ออกจาก h1 -->
+      <div onclick="changePage('landing')" class="cursor-pointer flex items-center">
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800">Staff Recruitment</h1>
       </div>
+
       <div class="space-x-3 flex">
         <button onclick="changePage('login-page')" class="text-purple-600 font-semibold py-2 px-5 rounded-full hover:bg-purple-50 transition text-sm md:text-base border border-purple-200">Head Portal</button>
         <button onclick="changePage('login-page')" class="bg-purple-600 text-white font-semibold py-2 px-5 rounded-full hover:bg-purple-700 transition shadow-md text-sm md:text-base">Admin</button>
