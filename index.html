@@ -29,7 +29,7 @@
     input[type=number] {
       -moz-appearance: textfield;
     }
-  </style>           
+  </style>            
 </head>
 <body class="min-h-screen flex flex-col justify-between text-slate-800">
 
@@ -223,7 +223,6 @@
     }
 
     // สร้างแถวตาราง: รอพิจารณา (สำหรับ Head)
-    // เพิ่ม '${item.appliedDept}' เข้าไปในปุ่มกดรับ/ปฏิเสธ
     function generateHeadPendingRows(dataArray) {
       if(dataArray.length === 0) return `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-medium">🎉 ไม่พบสตาฟที่รอคิวการพิจารณาในขณะนี้</td></tr>`;
       
@@ -392,8 +391,6 @@
         }
       }
     }
-
-    
 
     // ฟังก์ชันเปิด Modal สำหรับ Admin
     function openDeptModal(project, deptName) {
