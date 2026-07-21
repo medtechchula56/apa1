@@ -393,10 +393,6 @@
       }
     }
 
-    async function submitDecision(sheetName, row, decision) {
-      if(!confirm(`ยืนยันการ ${decision === 'Accepted' ? 'รับ' : 'ปฏิเสธ'} สตาฟคนนี้?`)) return;
-      const res = await callAPI({ action: "update_decision", sheetName, row, decision, dept: CURRENT_USER.dept });
-      if(res.status === "success") fetchDashboardData();
     }
 
     // ฟังก์ชันเปิด Modal สำหรับ Admin
