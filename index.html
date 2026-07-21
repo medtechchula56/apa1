@@ -223,6 +223,7 @@
     }
 
     // สร้างแถวตาราง: รอพิจารณา (สำหรับ Head)
+    // เพิ่ม '${item.appliedDept}' เข้าไปในปุ่มกดรับ/ปฏิเสธ
     function generateHeadPendingRows(dataArray) {
       if(dataArray.length === 0) return `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-medium">🎉 ไม่พบสตาฟที่รอคิวการพิจารณาในขณะนี้</td></tr>`;
       
@@ -235,11 +236,21 @@
           <td class="p-4 font-bold text-fuchsia-600">${item.rankLabel}</td>
           <td class="p-4 text-sm text-slate-600 whitespace-normal min-w-[200px] max-w-[300px]">${item.reason}</td>
           <td class="p-4 text-right whitespace-nowrap">
-            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted')" class="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition shadow-sm">รับ</button>
-            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected')" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-rose-600 transition shadow-sm ml-2">ปฏิเสธ</button>
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted', '${item.appliedDept}')" class="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition shadow-sm">รับ</button>
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected', '${item.appliedDept}')" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-rose-600 transition shadow-sm ml-2">ปฏิเสธ</button>
           </td>
         </tr>
       `).join('');
+    }
+
+    // ฟังก์ชันรับพารามิเตอร์ appliedDept แล้วส่งกลับไปที่ Code.gs
+    async function submitDecision(sheetName, row, decision, appliedDept) {
+      if(!confirm(`ยืนยันการ ${decision === 'Accepted' ? 'รับ' : 'ปฏิเสธ'} สตาฟคนนี้?`)) return;
+      
+      // ส่ง appliedDept ไปแทน CURRENT_USER.dept
+      const res = await callAPI({ action: "update_decision", sheetName, row, decision, dept: appliedDept });
+      
+      if(res.status === "success") fetchDashboardData();
     }
 
     // สร้างแถวตาราง: รับเข้าฝ่ายแล้ว (สำหรับ Head)
