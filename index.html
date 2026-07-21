@@ -272,9 +272,12 @@
     }
 
     // ฟังก์ชันช่วยสร้าง Section ตาราง 2 ส่วน (รอพิจารณา + รับแล้ว) สำหรับ Head
-    function generateHeadSectionHtml(dataArray, deptName) {
-      const pendingData = dataArray.filter(d => d.status === 'Pending');
-      const acceptedData = dataArray.filter(d => d.status === 'Accepted');
+    function generateHeadSectionHtml(fullDataArray, deptName) {
+      // 1. รอพิจารณา: ต้องสมัครฝ่ายนี้ และสถานะเป็น Pending
+      const pendingData = fullDataArray.filter(d => d.appliedDept === deptName && d.status === 'Pending');
+      
+      // 2. รับแล้ว: ต้องเช็กว่าในรายชื่อฝ่ายที่รับ (acceptedDepts) มีฝ่ายนี้อยู่จริงๆ (แก้บัคชื่อโผล่ซ้ำ 2 ตาราง)
+      const acceptedData = fullDataArray.filter(d => d.status === 'Accepted' && d.acceptedDepts && d.acceptedDepts.includes(deptName));
       
       let html = `
         <div class="mb-10">
@@ -380,9 +383,10 @@
 
           // ตารางข้อมูล (รองรับกรณี PR & Photo ควบ 2 ฝ่ายด้วย)
           if (CURRENT_USER.dept === "ฝ่ายประชาสัมพันธ์และถ่ายภาพ") {
-             html += generateHeadSectionHtml(res.list.filter(d => d.appliedDept === 'ฝ่ายประชาสัมพันธ์'), 'ฝ่ายประชาสัมพันธ์');
+             // แก้ไขแล้ว: ให้ส่ง res.list เต็มๆ ไปให้ฟังก์ชันกรองเอง
+             html += generateHeadSectionHtml(res.list, 'ฝ่ายประชาสัมพันธ์');
              html += `<div class="my-12"></div>`; // เว้นระยะ
-             html += generateHeadSectionHtml(res.list.filter(d => d.appliedDept === 'ฝ่ายถ่ายภาพ'), 'ฝ่ายถ่ายภาพ');
+             html += generateHeadSectionHtml(res.list, 'ฝ่ายถ่ายภาพ');
           } else {
              html += generateHeadSectionHtml(res.list, CURRENT_USER.dept);
           }
