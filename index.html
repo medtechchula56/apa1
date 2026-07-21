@@ -23,10 +23,11 @@
 <body class="min-h-screen flex flex-col justify-between text-slate-800">
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzb6-O58UbtwJUtwKi8QUXQN-QVwDgVskiTuEhc2xoyEaxQOPhdGzuQIu8jME4KKgOm/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/ใส่_LINK_ที่นี่/exec"; 
     
     let CURRENT_USER = null;
     let CURRENT_PROJECT = ""; 
+    let GLOBAL_ADMIN_DATA = [];
 
     const DEPARTMENTS = {
       camp: ['ฝ่ายบรรณาธิการ', 'ฝ่ายสิทธิประโยชน์', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายเสื้อ', 'ฝ่ายของที่ระลึกและขายของ', 'ฝ่ายศิลป์', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายประสาน', 'ฝ่ายบายศรี', 'ฝ่ายสถานที่', 'ฝ่ายรักษาความปลอดภัยและ VR', 'ฝ่ายแสงเสียง', 'ฝ่ายสวัสดิการ', 'ฝ่ายพี่บ้าน', 'ฝ่ายกิจกรรมและเนื้อหา', 'ฝ่ายพยาบาล', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'],
@@ -83,6 +84,10 @@
             select.innerHTML += `<option value="${d}">${d}</option>`;
           }
         });
+
+        if (!branch) {
+          select.innerHTML += `<option disabled class="text-slate-400">⚠️ โปรดเลือก 'สาขา' ด้านบนก่อน เพื่อแสดงฝ่ายวิชาการ</option>`;
+        }
         if(savedVal) select.value = savedVal;
       });
     }
@@ -167,108 +172,246 @@
       
       if(res.status === "success") { 
         CURRENT_USER = res.userData;
-        document.getElementById('dash-title').innerText = CURRENT_USER.role === 'admin' ? 'Admin / ประธานโครงการ' : `Head: ${CURRENT_USER.dept}`;
+        
+        if (CURRENT_USER.role === 'admin') {
+          document.getElementById('dash-header').innerHTML = `
+            <div><h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-500">Admin Dashboard</h2><p class="text-base text-slate-500 mt-1">ระบบคัดเลือกสตาฟส่วนกลาง</p></div>
+            <div class="space-x-2 flex items-center"><button onclick="fetchDashboardData()" class="text-sm font-bold text-purple-600 bg-purple-50 px-4 py-2.5 rounded-full hover:bg-purple-100 transition border border-purple-200">🔄 รีเฟรช</button><button onclick="CURRENT_USER=null; changePage('landing')" class="text-sm font-bold text-rose-500 bg-rose-50 px-5 py-2.5 rounded-full hover:bg-rose-100 transition border border-rose-200">ออกจากระบบ</button></div>
+          `;
+        } else {
+          document.getElementById('dash-header').innerHTML = `
+            <div><h2 class="text-3xl font-black text-fuchsia-600">${CURRENT_USER.dept}</h2><p class="text-base text-slate-500 mt-1">ระบบคัดเลือกสตาฟฝ่าย</p></div>
+            <div><button onclick="CURRENT_USER=null; changePage('landing')" class="text-sm font-bold text-rose-500 bg-rose-50 px-5 py-2.5 rounded-full hover:bg-rose-100 transition border border-rose-200">ออกจากระบบ</button></div>
+          `;
+        }
+
         e.target.reset(); changePage('dashboard-panel'); fetchDashboardData(); 
       } else { alert(res.msg); }
       btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false;
     }
 
-    // ฟังก์ชันช่วยสร้างแถวตาราง
-    function generateTableRows(dataArray) {
-      if(dataArray.length === 0) return "<tr><td colspan='5' class='p-8 text-center text-slate-400'>ไม่มีข้อมูลในคิวของคุณ</td></tr>";
+    // สร้างตารางสำหรับ Admin (เหมือนเดิม)
+    function generateAdminTableRows(dataArray) {
+      if(dataArray.length === 0) return `<tr><td colspan="6" class='p-8 text-center text-slate-400'>ไม่มีข้อมูลในระบบ</td></tr>`;
       
       return dataArray.map(item => {
         let badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-amber-100 text-amber-700 shadow-sm">${item.status}</span>`;
         if(item.status === 'Accepted') badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700 shadow-sm">รับแล้ว</span>`;
         if(item.status === 'Rejected') badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-rose-100 text-rose-700 shadow-sm">ไม่ผ่าน</span>`;
 
-        let actionButtons = "";
-        if(CURRENT_USER.role !== 'admin' && item.status.includes('Pending')) {
-          actionButtons = `
-            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted')" class="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-emerald-600 transition">รับ</button>
-            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-rose-600 transition ml-1">ปฏิเสธ</button>
-          `;
-        }
-
         return `
-          <tr class="border-b bg-white hover:bg-purple-50 transition">
-            <td class="p-4 font-mono text-purple-600">${item.id}</td>
-            <td class="p-4">
-              <p class="font-bold text-slate-700">${item.name}</p>
-              <p class="text-xs text-slate-500 font-semibold mt-1">${item.majorInfo}</p>
-            </td>
-            <td class="p-4">
-              <p class="text-sm font-semibold text-purple-600">${item.rankLabel}</p>
-              <p class="text-xs text-slate-600 max-w-[200px] truncate" title="${item.reason}">${item.reason}</p>
-              <p class="text-[10px] text-slate-400 mt-1">${item.choices}</p>
-            </td>
-            <td class="p-4 text-xs font-mono text-slate-600 space-y-1">
-              <div>📞 ${item.phone}</div>
-              <div class="text-emerald-500">LINE: ${item.lineId}</div>
-              ${item.ig ? `<div>IG: ${item.ig}</div>` : ''}
-            </td>
-            <td class="p-4 text-right whitespace-nowrap">${CURRENT_USER.role === 'admin' || item.status === 'Accepted' ? badge : actionButtons}</td>
+          <tr class="border-b bg-white hover:bg-purple-50/50 transition">
+            <td class="p-4 font-bold text-purple-600 text-sm whitespace-nowrap">${item.project === 'camp' ? '🏕️ ค่ายฯ' : '📝 ตอบปัญหา'}</td>
+            <td class="p-4 font-mono text-slate-500 text-sm">${item.id}</td>
+            <td class="p-4"><p class="font-bold text-slate-700">${item.name} (${item.nickname})</p><p class="text-xs text-slate-500 font-semibold mt-1">${item.majorInfo}</p></td>
+            <td class="p-4"><p class="text-xs text-slate-500 leading-relaxed max-w-[250px] whitespace-normal">${item.choices}</p></td>
+            <td class="p-4 text-xs font-mono text-slate-600 space-y-1"><div>📞 ${item.phone}</div><div class="text-emerald-500">LINE: ${item.lineId}</div></td>
+            <td class="p-4 text-right whitespace-nowrap">${badge}</td>
           </tr>`;
       }).join('');
     }
 
+    // สร้างแถวตาราง: รอพิจารณา (สำหรับ Head)
+    function generateHeadPendingRows(dataArray) {
+      if(dataArray.length === 0) return `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-medium">🎉 ไม่พบสตาฟที่รอคิวการพิจารณาในขณะนี้</td></tr>`;
+      
+      return dataArray.map(item => `
+        <tr class="border-b bg-white hover:bg-slate-50 transition">
+          <td class="p-4">
+            <p class="font-bold text-slate-700">${item.name} (${item.nickname})</p>
+            <p class="text-xs text-slate-500 font-semibold mt-1">ID: ${item.id} | ${item.majorInfo}</p>
+          </td>
+          <td class="p-4 font-bold text-fuchsia-600">${item.rankLabel}</td>
+          <td class="p-4 text-sm text-slate-600 whitespace-normal min-w-[200px] max-w-[300px]">${item.reason}</td>
+          <td class="p-4 text-right whitespace-nowrap">
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted')" class="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition shadow-sm">รับ</button>
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected')" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-rose-600 transition shadow-sm ml-2">ปฏิเสธ</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // สร้างแถวตาราง: รับเข้าฝ่ายแล้ว (สำหรับ Head)
+    function generateHeadAcceptedRows(dataArray) {
+      if(dataArray.length === 0) return `<tr><td colspan="2" class="py-8 text-center text-emerald-500 font-medium">ยังไม่มีสตาฟในฝ่าย</td></tr>`;
+      
+      return dataArray.map(item => `
+        <tr class="border-b border-emerald-100 bg-white hover:bg-emerald-50/50 transition">
+          <td class="p-4">
+            <p class="font-bold text-slate-800">${item.name} (${item.nickname})</p>
+            <p class="text-xs text-slate-500 font-semibold mt-1">ID: ${item.id} | ${item.majorInfo}</p>
+          </td>
+          <td class="p-4 text-sm font-mono text-slate-600 space-y-1">
+            <div class="font-semibold text-emerald-600">LINE: ${item.lineId}</div>
+            <div>Tel: ${item.phone}</div>
+            ${item.ig ? `<div>IG: ${item.ig}</div>` : ''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ฟังก์ชันช่วยสร้าง Section ตาราง 2 ส่วน (รอพิจารณา + รับแล้ว) สำหรับ Head
+    function generateHeadSectionHtml(dataArray, deptName) {
+      const pendingData = dataArray.filter(d => d.status === 'Pending');
+      const acceptedData = dataArray.filter(d => d.status === 'Accepted');
+      
+      let html = `
+        <div class="mb-10">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700">📋 รอพิจารณา: ${deptName}</h3>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm mb-8">
+            <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+              <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">ข้อมูลสตาฟ</th><th class="p-4">อันดับ</th><th class="p-4">เหตุผลประกอบการร่วมฝ่าย</th><th class="p-4 text-right">การคัดเลือก</th></tr></thead>
+              <tbody>${generateHeadPendingRows(pendingData)}</tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-center mb-8">
+             <button onclick="fetchDashboardData()" class="flex items-center gap-2 bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 shadow-sm transition"><span class="text-blue-500 text-lg">🔄</span> โหลดข้อมูลใหม่</button>
+          </div>
+
+          <h3 class="text-xl font-bold text-emerald-700 mb-4">รายชื่อสตาฟที่รับเข้าฝ่าย: ${deptName}</h3>
+          <div class="overflow-x-auto rounded-2xl border border-emerald-200 shadow-sm">
+            <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+              <thead class="bg-emerald-50 border-b border-emerald-100"><tr class="text-sm font-bold text-emerald-800"><th class="p-4">ข้อมูลสตาฟ</th><th class="p-4">ข้อมูลติดต่อ</th></tr></thead>
+              <tbody>${generateHeadAcceptedRows(acceptedData)}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      return html;
+    }
+
     async function fetchDashboardData() {
-      const container = document.getElementById('dash-table-container');
-      container.innerHTML = "<div class='p-8 text-center text-purple-400 text-lg'>กำลังโหลดข้อมูลจากฐานข้อมูล...</div>";
+      const container = document.getElementById('dash-content');
+      container.innerHTML = "<div class='p-12 text-center text-purple-400 text-xl font-bold animate-pulse'>กำลังโหลดข้อมูล...</div>";
 
       const res = await callAPI({ action: "get_dashboard", userId: CURRENT_USER.username });
       
-      document.getElementById('stat-total').innerText = res.summary.total;
-      document.getElementById('stat-pen').innerText = res.summary.pending;
-      document.getElementById('stat-acc').innerText = res.summary.accepted;
-      document.getElementById('stat-rej').innerText = res.summary.rejected;
-
       if(res.status === "success") {
-        // ตรวจจับกรณีพิเศษ: ถ้าเป็นหัวหน้าฝ่ายประชาสัมพันธ์และถ่ายภาพ
-        if(CURRENT_USER.dept === "ฝ่ายประชาสัมพันธ์และถ่ายภาพ") {
-          const prData = res.list.filter(d => d.appliedDept === 'ฝ่ายประชาสัมพันธ์');
-          const photoData = res.list.filter(d => d.appliedDept === 'ฝ่ายถ่ายภาพ');
-          
-          container.innerHTML = `
-            <h4 class="font-bold text-slate-700 text-lg mb-2">📸 ตารางที่ 1: ผู้สมัครฝ่ายประชาสัมพันธ์</h4>
-            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm mb-8">
-              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
-                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
-                <tbody>${generateTableRows(prData)}</tbody>
-              </table>
-            </div>
+        GLOBAL_ADMIN_DATA = res.list;
 
-            <h4 class="font-bold text-slate-700 text-lg mb-2">📸 ตารางที่ 2: ผู้สมัครฝ่ายถ่ายภาพ</h4>
-            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
-              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
-                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
-                <tbody>${generateTableRows(photoData)}</tbody>
-              </table>
+        if (CURRENT_USER.role === 'admin') {
+          // ================= ADMIN VIEW (หน้าตาเดิม) =================
+          let html = `
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div class="bg-slate-800 text-white p-6 rounded-2xl text-center shadow-md"><p class="text-sm font-semibold opacity-80 mb-1">ยอดผู้สมัครรวม</p><p class="text-4xl font-black">${res.summary.total}</p></div>
+              <div class="bg-emerald-500 text-white p-6 rounded-2xl text-center shadow-md"><p class="text-sm font-semibold opacity-90 mb-1">ได้ฝ่ายเรียบร้อย</p><p class="text-4xl font-black">${res.summary.accepted}</p></div>
+              <div class="bg-orange-500 text-white p-6 rounded-2xl text-center shadow-md"><p class="text-sm font-semibold opacity-90 mb-1">รอพิจารณา</p><p class="text-4xl font-black">${res.summary.pending}</p></div>
+              <div class="bg-rose-500 text-white p-6 rounded-2xl text-center shadow-md"><p class="text-sm font-semibold opacity-90 mb-1">ไม่ผ่านคัดเลือก</p><p class="text-4xl font-black">${res.summary.rejected}</p></div>
             </div>
-          `;
+            
+            <div class="mb-10">
+              <h4 class="font-bold text-slate-700 text-lg mb-4 flex items-center">🏕️ ค่ายเพื่อนกาวน์ <span class="text-sm font-normal text-slate-400 ml-2">(คลิกที่ตำแหน่งเพื่อดูรายชื่อ)</span></h4>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">`;
+              
+          DEPARTMENTS['camp'].forEach(d => {
+            let count = res.summary.depts.camp[d] || 0;
+            html += `<div onclick="openDeptModal('camp', '${d}')" class="bg-white p-4 rounded-xl border border-purple-100 shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md hover:border-purple-300 transition group"><span class="font-medium text-slate-700 group-hover:text-purple-600 transition truncate mr-2 text-sm">${d}</span><span class="bg-purple-100 text-purple-600 font-bold px-3 py-1 rounded-full text-sm shrink-0">${count}</span></div>`;
+          });
+          html += `</div>`;
+
+          html += `<h4 class="font-bold text-slate-700 text-lg mb-4 flex items-center">📝 ตอบปัญหาวิชาการ <span class="text-sm font-normal text-slate-400 ml-2">(คลิกที่ตำแหน่งเพื่อดูรายชื่อ)</span></h4><div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">`;
+          DEPARTMENTS['quiz'].forEach(d => {
+            let count = res.summary.depts.quiz[d] || 0;
+            html += `<div onclick="openDeptModal('quiz', '${d}')" class="bg-white p-4 rounded-xl border border-fuchsia-100 shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md hover:border-fuchsia-300 transition group"><span class="font-medium text-slate-700 group-hover:text-fuchsia-600 transition truncate mr-2 text-sm">${d}</span><span class="bg-fuchsia-100 text-fuchsia-600 font-bold px-3 py-1 rounded-full text-sm shrink-0">${count}</span></div>`;
+          });
+          html += `</div></div>`;
+
+          html += `
+            <div class="flex justify-between items-center mb-4"><h4 class="font-bold text-slate-700 text-lg">📋 ฐานข้อมูลผู้สมัครทั้งหมด</h4></div>
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm max-h-[500px]">
+              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+                <thead class="sticky top-0 bg-slate-50 border-b z-10"><tr class="text-sm font-bold text-slate-500"><th class="p-4">โครงการ</th><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">สถานะ</th></tr></thead>
+                <tbody>${generateAdminTableRows(res.list)}</tbody>
+              </table>
+            </div>`;
+            
+          container.innerHTML = html;
+
         } else {
-          // ถ้าเป็นฝ่ายอื่นๆ ปกติ (1 ตาราง)
-          container.innerHTML = `
-            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
-              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
-                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
-                <tbody>${generateTableRows(res.list)}</tbody>
-              </table>
+          // ================= HEAD VIEW (ปรับใหม่ 6 สถิติ + แยกตาราง 2 ส่วน) =================
+          let html = `
+            <!-- สถิติ 6 ช่องแบบใหม่ -->
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8">
+              <div class="bg-white border border-slate-200 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-slate-600 mb-1">คนสมัครรวมทั้งค่าย</p><p class="text-3xl font-black text-slate-800">${res.summary.head.totalProject}</p>
+              </div>
+              <div class="bg-rose-50 border border-rose-100 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-rose-500 mb-1">สตาฟที่ไม่ผ่านค่ายนี้</p><p class="text-3xl font-black text-rose-600">${res.summary.head.totalProjectRejected}</p>
+              </div>
+              <div class="bg-fuchsia-50 border border-fuchsia-100 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-fuchsia-600 mb-1">สมัครฝ่ายนี้</p><p class="text-3xl font-black text-fuchsia-700">${res.summary.head.totalDeptApplied}</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-amber-500 mb-1">รอพิจารณาอันดับ 1</p><p class="text-3xl font-black text-amber-600">${res.summary.head.pendingRank1}</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-amber-500 mb-1">รอพิจารณาอันดับ 2</p><p class="text-3xl font-black text-amber-600">${res.summary.head.pendingRank2}</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
+                <p class="text-[11px] font-bold text-amber-500 mb-1">รอพิจารณาอันดับ 3</p><p class="text-3xl font-black text-amber-600">${res.summary.head.pendingRank3}</p>
+              </div>
             </div>
+            <hr class="border-fuchsia-100 mb-8">
           `;
+
+          // ตารางข้อมูล (รองรับกรณี PR & Photo ควบ 2 ฝ่ายด้วย)
+          if (CURRENT_USER.dept === "ฝ่ายประชาสัมพันธ์และถ่ายภาพ") {
+             html += generateHeadSectionHtml(res.list.filter(d => d.appliedDept === 'ฝ่ายประชาสัมพันธ์'), 'ฝ่ายประชาสัมพันธ์');
+             html += `<div class="my-12"></div>`; // เว้นระยะ
+             html += generateHeadSectionHtml(res.list.filter(d => d.appliedDept === 'ฝ่ายถ่ายภาพ'), 'ฝ่ายถ่ายภาพ');
+          } else {
+             html += generateHeadSectionHtml(res.list, CURRENT_USER.dept);
+          }
+
+          container.innerHTML = html;
         }
       }
     }
 
     async function submitDecision(sheetName, row, decision) {
-      if(!confirm(`ยืนยันการ ${decision} สตาฟคนนี้?`)) return;
+      if(!confirm(`ยืนยันการ ${decision === 'Accepted' ? 'รับ' : 'ปฏิเสธ'} สตาฟคนนี้?`)) return;
       const res = await callAPI({ action: "update_decision", sheetName, row, decision, dept: CURRENT_USER.dept });
       if(res.status === "success") fetchDashboardData();
     }
+
+    // ฟังก์ชันเปิด Modal สำหรับ Admin
+    function openDeptModal(project, deptName) {
+      const modal = document.getElementById('dept-modal');
+      const title = document.getElementById('modal-dept-title');
+      const list = document.getElementById('modal-dept-list');
+      
+      title.innerText = `รายชื่อสตาฟ: ${deptName}`;
+      list.innerHTML = "";
+      
+      const filtered = GLOBAL_ADMIN_DATA.filter(item => item.project === project && item.acceptedDepts && item.acceptedDepts.includes(deptName));
+      
+      if(filtered.length === 0) {
+        list.innerHTML = "<p class='text-center text-slate-500 py-8'>ยังไม่มีสตาฟในฝ่ายนี้</p>";
+      } else {
+        filtered.forEach(can => {
+          list.innerHTML += `
+            <div class="p-5 border-b hover:bg-slate-50 transition">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-lg text-slate-800">${can.name} (${can.nickname})</span>
+                <span class="font-semibold text-fuchsia-600 text-sm bg-fuchsia-100 px-3 py-1 rounded-lg shadow-sm">${can.majorInfo}</span>
+              </div>
+              <div class="flex flex-col sm:flex-row sm:space-x-4 text-sm mt-3">
+                <span class="font-semibold text-slate-600">ID: ${can.id}</span>
+                <span class="text-emerald-600 font-mono font-medium">LINE: ${can.lineId}</span>
+                <span class="text-slate-600 font-mono font-medium">Tel: ${can.phone}</span>
+              </div>
+            </div>`;
+        });
+      }
+      modal.classList.remove('hidden');
+    }
+    function closeDeptModal() { document.getElementById('dept-modal').classList.add('hidden'); }
   </script>
 
-  <!-- Header -->
-  <header class="bg-white/70 backdrop-blur-md sticky top-0 z-40 border-b border-purple-100 shadow-sm">
+  <header class="bg-white/70 backdrop-blur-md sticky top-0 z-30 border-b border-purple-100 shadow-sm">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center max-w-6xl">
       <div onclick="changePage('landing')" class="cursor-pointer flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center shadow-md">
@@ -283,7 +426,6 @@
     </div>
   </header>
 
-  <!-- Landing Page -->
   <main id="landing" class="container mx-auto px-4 my-auto py-12 max-w-5xl">
     <div class="flex flex-col md:flex-row gap-12 items-center justify-between">
       <div class="space-y-6 text-center md:text-left flex-1">
@@ -320,7 +462,6 @@
     </div>
   </main>
 
-  <!-- Modal แจ้งเตือนตอบปัญหา -->
   <div id="quiz-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl w-full max-w-xl shadow-2xl p-8 border border-purple-100">
       <h3 class="text-2xl font-bold text-purple-600 mb-4 flex items-center gap-2">⚠️ ชี้แจงการจัดทำข้อสอบ</h3>
@@ -343,7 +484,18 @@
     </div>
   </div>
 
-  <!-- Form Page -->
+  <div id="dept-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl border border-fuchsia-100">
+      <div class="p-6 border-b flex justify-between items-center bg-fuchsia-50/50 rounded-t-3xl">
+        <h3 id="modal-dept-title" class="text-2xl font-bold text-fuchsia-600">รายชื่อสตาฟ: </h3>
+        <button onclick="closeDeptModal()" class="text-slate-400 hover:text-rose-500 text-3xl leading-none transition">&times;</button>
+      </div>
+      <div class="p-2 overflow-y-auto flex-1 bg-slate-50/50">
+        <div id="modal-dept-list" class="space-y-0"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="register-form" class="hidden container mx-auto px-4 py-10 max-w-3xl">
     <div class="glass-card p-8 md:p-10">
       <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับหน้าแรก</button>
@@ -351,9 +503,7 @@
         <h3 class="text-3xl font-bold text-slate-800">กรอกใบสมัครสตาฟ</h3>
         <p id="form-title-text" class="text-purple-600 font-medium mt-1">โครงการ...</p>
       </div>
-
       <form onsubmit="handleRegister(event)" class="space-y-8">
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2 flex gap-4">
             <div class="w-1/2"><label class="text-sm font-bold text-slate-700 ml-1">ชื่อ - นามสกุล <span class="text-red-500">*</span></label><input type="text" id="fullName" required class="input-field"></div>
@@ -361,43 +511,24 @@
           </div>
           <div><label class="text-sm font-bold text-slate-700 ml-1">รหัสนิสิต 10 หลัก <span class="text-red-500">*</span></label><input type="number" id="stdId" required class="input-field font-mono"></div>
           <div class="flex gap-4">
-            <div class="w-1/2">
-              <label class="text-sm font-bold text-slate-700 ml-1">สาขา <span class="text-red-500">*</span></label>
-              <select id="branch" required onchange="setupDropdowns()" class="input-field">
-                <option value="" disabled selected>-</option><option value="MT">MT</option><option value="PT">PT</option><option value="ND">ND</option><option value="RT">RT</option>
-              </select>
-            </div>
-            <div class="w-1/2">
-              <label class="text-sm font-bold text-slate-700 ml-1">ชั้นปี <span class="text-red-500">*</span></label>
-              <select id="year" required class="input-field">
-                <option value="" disabled selected>-</option><option value="1">ปี 1</option><option value="2">ปี 2</option><option value="3">ปี 3</option><option value="4">ปี 4</option>
-              </select>
-            </div>
+            <div class="w-1/2"><label class="text-sm font-bold text-slate-700 ml-1">สาขา <span class="text-red-500">*</span></label><select id="branch" required onchange="setupDropdowns()" class="input-field"><option value="" disabled selected>-</option><option value="MT">MT</option><option value="PT">PT</option><option value="ND">ND</option><option value="RT">RT</option></select></div>
+            <div class="w-1/2"><label class="text-sm font-bold text-slate-700 ml-1">ชั้นปี <span class="text-red-500">*</span></label><select id="year" required class="input-field"><option value="" disabled selected>-</option><option value="1">ปี 1</option><option value="2">ปี 2</option><option value="3">ปี 3</option><option value="4">ปี 4</option></select></div>
           </div>
           <div><label class="text-sm font-bold text-slate-700 ml-1">เบอร์ติดต่อ <span class="text-red-500">*</span></label><input type="number" id="phone" required class="input-field font-mono"></div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
           <div><label class="text-sm font-bold text-slate-700 ml-1">LINE ID <span class="text-red-500">*</span></label><input type="text" id="lineId" required class="input-field"></div>
           <div><label class="text-sm font-bold text-slate-700 ml-1">IG Account (Optional)</label><input type="text" id="ig" class="input-field"></div>
           <div class="md:col-span-2">
             <label class="text-sm font-bold text-slate-700 ml-1 mb-2 block">อนุญาตให้เพิ่มเพื่อนผ่านช่องทางใด <span class="text-red-500">*</span></label>
-            <div class="flex gap-6 pl-2">
-              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="LINE ID" required class="accent-purple-500 w-4 h-4"> LINE ID</label>
-              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="เบอร์โทร" class="accent-purple-500 w-4 h-4"> เบอร์โทรศัพท์</label>
-            </div>
+            <div class="flex gap-6 pl-2"><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="LINE ID" required class="accent-purple-500 w-4 h-4"> LINE ID</label><label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="เบอร์โทร" class="accent-purple-500 w-4 h-4"> เบอร์โทรศัพท์</label></div>
           </div>
         </div>
-        
         <div class="p-6 rounded-2xl border-2 border-purple-200 bg-white shadow-sm space-y-4">
           <div class="flex justify-between items-center border-b pb-4">
             <h4 class="font-bold text-purple-700 text-lg">การเลือกฝ่ายปฏิบัติงาน</h4>
-            <label class="flex items-center gap-2 cursor-pointer bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 hover:bg-purple-100 transition">
-              <input type="checkbox" id="isMultiRole" onchange="validateRolesLimit()" class="accent-purple-500 w-5 h-5"> 
-              <span class="font-bold text-purple-700 text-sm">สนใจควบฝ่าย (ปฏิบัติงานหลายตำแหน่ง)</span>
-            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 hover:bg-purple-100 transition"><input type="checkbox" id="isMultiRole" onchange="validateRolesLimit()" class="accent-purple-500 w-5 h-5"> <span class="font-bold text-purple-700 text-sm">สนใจควบฝ่าย (ปฏิบัติงานหลายตำแหน่ง)</span></label>
           </div>
-          
           <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 space-y-2">
             <div><label class="text-base font-bold text-purple-700 ml-1">อันดับที่ 1 (บังคับ)</label><select id="rank1" required onchange="validateRolesLimit()" class="input-field font-medium"></select></div>
             <div><label class="text-sm font-bold text-slate-600 ml-1">เหตุผลประกอบการสมัคร</label><input type="text" id="reason1" required class="input-field"></div>
@@ -412,13 +543,11 @@
             <p id="multi-alert" class="text-sm text-fuchsia-600 font-semibold mt-2 ml-1"></p>
           </div>
         </div>
-
         <button type="submit" id="reg-submit-btn" class="w-full btn-primary text-xl py-4 mt-4">ยืนยันการส่งใบสมัคร</button>
       </form>
     </div>
   </div>
 
-  <!-- Status Check Page -->
   <div id="status-check" class="hidden container mx-auto px-4 py-12 max-w-lg">
     <div class="glass-card p-10 text-center">
       <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับ</button>
@@ -432,13 +561,11 @@
     </div>
   </div>
 
-  <!-- Login Page -->
   <div id="login-page" class="hidden container mx-auto px-4 py-12 max-w-md">
     <div class="glass-card p-10">
       <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับ</button>
       <h3 class="text-2xl font-bold text-slate-800 text-center mb-2">System Portal</h3>
       <p class="text-center text-slate-500 text-sm mb-8">สำหรับ Head ฝ่าย และ Admin</p>
-      
       <form onsubmit="handleLogin(event)" class="space-y-5">
         <div><label class="text-sm font-bold text-slate-600 ml-1">Username</label><input type="text" id="loginUser" required class="input-field text-lg text-center font-mono"></div>
         <div><label class="text-sm font-bold text-slate-600 ml-1">Password</label><input type="password" id="loginPass" required class="input-field text-lg text-center tracking-widest"></div>
@@ -447,32 +574,19 @@
     </div>
   </div>
 
-  <!-- Dashboard Panel -->
   <div id="dashboard-panel" class="hidden container mx-auto px-4 py-8 max-w-7xl">
     <div class="glass-card p-6 md:p-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-purple-100 pb-6 mb-8 gap-4">
-        <div>
-          <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-500" id="dash-title">Dashboard</h2>
-          <p class="text-base text-slate-500 mt-1">ระบบคัดเลือกสตาฟส่วนกลาง</p>
-        </div>
-        <button onclick="CURRENT_USER=null; changePage('landing')" class="text-sm font-bold text-rose-500 bg-rose-50 px-5 py-2.5 rounded-full hover:bg-rose-100 transition border border-rose-200">ออกจากระบบ</button>
+      
+      <!-- Header Dynamic -->
+      <div id="dash-header" class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-8 gap-4 border-b-2 border-purple-100">
+        <!-- Rendered by JS -->
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-slate-50 p-5 rounded-2xl text-center border shadow-sm"><p class="text-sm text-slate-500 font-bold mb-1">ยอดสมัครทั้งหมด</p><p id="stat-total" class="text-3xl font-black text-slate-700">0</p></div>
-        <div class="bg-amber-50 p-5 rounded-2xl text-center border border-amber-100 shadow-sm"><p class="text-sm text-amber-600 font-bold mb-1">รอพิจารณา</p><p id="stat-pen" class="text-3xl font-black text-amber-700">0</p></div>
-        <div class="bg-emerald-50 p-5 rounded-2xl text-center border border-emerald-100 shadow-sm"><p class="text-sm text-emerald-600 font-bold mb-1">รับแล้ว</p><p id="stat-acc" class="text-3xl font-black text-emerald-700">0</p></div>
-        <div class="bg-rose-50 p-5 rounded-2xl text-center border border-rose-100 shadow-sm"><p class="text-sm text-rose-500 font-bold mb-1">ไม่ผ่าน</p><p id="stat-rej" class="text-3xl font-black text-rose-600">0</p></div>
+      <!-- Content Area -->
+      <div id="dash-content">
+        <!-- Rendered by JS -->
       </div>
 
-      <div class="flex justify-between items-center mb-4">
-        <h4 class="font-bold text-slate-700 text-lg">📋 รายชื่อผู้สมัครในความดูแล</h4>
-        <button onclick="fetchDashboardData()" class="text-sm font-bold text-purple-600 bg-purple-50 px-4 py-2 rounded-lg hover:bg-purple-100">🔄 รีเฟรช</button>
-      </div>
-      
-      <!-- ตำแหน่งนี้คือส่วนที่จะถูกสร้างตารางโดย Javascript แบบไดนามิก -->
-      <div id="dash-table-container"></div>
-      
     </div>
   </div>
 
