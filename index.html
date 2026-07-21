@@ -3,330 +3,482 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Recruitment | AHS</title>
+  <title>AHS CU Staff Recruitment 2026</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { 
-      font-family: 'Prompt', sans-serif; 
-      background: linear-gradient(135deg, #1A0B2E 0%, #3B1066 50%, #0F051D 100%);
-      color: #F8FAFC; 
-      margin: 0; 
-      min-height: 100vh;
-      background-attachment: fixed;
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    }
-    .premium-input {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      transition: all 0.3s ease;
-    }
-    .premium-input:focus {
-      border-color: #A855F7;
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
-      outline: none;
-      background: rgba(0, 0, 0, 0.4);
-    }
-    /* เปลี่ยนสี option ใน select ให้มองเห็นชัดเวลาคลิก */
-    select option { background-color: #1A0B2E; color: white; }
-    
-    .hidden-section { display: none !important; }
-    .fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    body { font-family: 'Prompt', sans-serif; background: linear-gradient(135deg, #f3e8ff 0%, #faf5ff 50%, #fdf4ff 100%); background-attachment: fixed; }
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-radius: 24px; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.08); border: 1px solid rgba(255, 255, 255, 0.6); }
+    .input-field { width: 100%; padding: 0.875rem 1.25rem; margin-top: 0.5rem; border-radius: 12px; border: 1px solid #e9d5ff; font-size: 1rem; transition: all 0.3s ease; background-color: #faf5ff; color: #4c1d95; }
+    .input-field:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15); background-color: #ffffff; }
+    .btn-primary { background: linear-gradient(135deg, #9333ea 0%, #d946ef 100%); color: white; padding: 0.875rem 1.5rem; border-radius: 16px; font-weight: 600; font-size: 1.125rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(147, 51, 234, 0.4); }
+    .btn-primary:disabled { opacity: 0.7; transform: none; }
+    .btn-menu { background: rgba(255, 255, 255, 0.9); border: 1px solid #e9d5ff; border-radius: 20px; transition: all 0.3s ease; }
+    .btn-menu:hover { background: #ffffff; border-color: #c084fc; box-shadow: 0 8px 25px rgba(147, 51, 234, 0.15); transform: translateY(-2px); }
   </style>
 </head>
-<body class="flex flex-col h-screen overflow-x-hidden text-slate-200">
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
 
-  <!-- Navbar -->
-  <nav class="fixed top-0 w-full z-50 glass-panel border-b-0 transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border border-white/20">
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/ใส่_LINK_ที่นี่/exec"; 
+    
+    let CURRENT_USER = null;
+    let CURRENT_PROJECT = ""; 
+
+    const DEPARTMENTS = {
+      camp: ['ฝ่ายบรรณาธิการ', 'ฝ่ายสิทธิประโยชน์', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายเสื้อ', 'ฝ่ายของที่ระลึกและขายของ', 'ฝ่ายศิลป์', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายประสาน', 'ฝ่ายบายศรี', 'ฝ่ายสถานที่', 'ฝ่ายรักษาความปลอดภัยและ VR', 'ฝ่ายแสงเสียง', 'ฝ่ายสวัสดิการ', 'ฝ่ายพี่บ้าน', 'ฝ่ายกิจกรรมและเนื้อหา', 'ฝ่ายพยาบาล', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'],
+      quiz: ['ฝ่ายสิทธิประโยชน์', 'ฝ่ายบรรณาธิการ', 'ฝ่ายพิธีการ', 'ฝ่าย AP Timer', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายรางวัลและของที่ระลึก', 'ฝ่ายสวัสดิการและพยาบาล', 'ฝ่ายสถานที่', 'ฝ่ายแสงเสียง', 'ฝ่ายปฏิคม', 'ฝ่ายนิทรรศการ', 'ฝ่ายออกแบบการแข่งขัน', 'ฝ่ายคุมสอบและตรวจข้อสอบ', 'ฝ่ายผลิตข้อสอบ', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT']
+    };
+    
+    const QUIZ_3_ROLES_ALLOWED = ['ฝ่ายออกแบบการแข่งขัน', 'ฝ่ายคุมสอบและตรวจข้อสอบ', 'ฝ่ายผลิตข้อสอบ', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'];
+
+    async function callAPI(payload) {
+      try {
+        const response = await fetch(GAS_URL, { method: "POST", headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+        return await response.json();
+      } catch (error) {
+        alert("เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้ง");
+      }
+    }
+
+    function changePage(pageId) {
+      ['landing', 'register-form', 'status-check', 'login-page', 'dashboard-panel'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(pageId).classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function openForm(project) {
+      CURRENT_PROJECT = project;
+      if(project === 'quiz') {
+        document.getElementById('quiz-modal').classList.remove('hidden');
+      } else {
+        proceedToForm();
+      }
+    }
+
+    function proceedToForm() {
+      document.getElementById('quiz-modal').classList.add('hidden');
+      document.getElementById('form-title-text').innerText = CURRENT_PROJECT === 'camp' ? '🏕️ ค่ายเพื่อนกาวน์ ครั้งที่ 21' : '📝 ตอบปัญหาวิชาการสหเวชศาสตร์ ครั้งที่ 2';
+      changePage('register-form');
+      setupDropdowns();
+      validateRolesLimit();
+    }
+
+    function setupDropdowns() {
+      const branch = document.getElementById('branch').value;
+      ['rank1', 'rank2', 'rank3'].forEach((id, index) => {
+        const select = document.getElementById(id);
+        const savedVal = select.value;
+        select.innerHTML = index === 0 ? `<option value="" disabled selected>--- เลือกฝ่าย (บังคับ) ---</option>` : `<option value="">--- ไม่ประสงค์สมัคร ---</option>`;
+        
+        DEPARTMENTS[CURRENT_PROJECT].forEach(d => {
+          if (d.includes('วิชาการ')) {
+            if (branch && d.includes(branch)) select.innerHTML += `<option value="${d}">${d}</option>`;
+          } else {
+            select.innerHTML += `<option value="${d}">${d}</option>`;
+          }
+        });
+        if(savedVal) select.value = savedVal;
+      });
+    }
+
+    function validateRolesLimit() {
+      const isMulti = document.getElementById('isMultiRole').checked;
+      const rank3Select = document.getElementById('rank3');
+      const rank3Reason = document.getElementById('reason3');
+      
+      if (isMulti) {
+        if (CURRENT_PROJECT === 'camp') {
+          rank3Select.value = ""; rank3Select.disabled = true; rank3Reason.disabled = true;
+          document.getElementById('multi-alert').innerText = "ค่ายเพื่อนกาวน์สามารถควบฝ่ายได้สูงสุด 2 ตำแหน่ง";
+        } else {
+          const r1 = document.getElementById('rank1').value;
+          const r2 = document.getElementById('rank2').value;
+          if (r1 && r2 && QUIZ_3_ROLES_ALLOWED.includes(r1) && QUIZ_3_ROLES_ALLOWED.includes(r2)) {
+             rank3Select.disabled = false; rank3Reason.disabled = false;
+             document.getElementById('multi-alert').innerText = "ฝ่ายที่คุณเลือกสามารถควบได้สูงสุด 3 ตำแหน่ง";
+          } else {
+             rank3Select.value = ""; rank3Select.disabled = true; rank3Reason.disabled = true;
+             document.getElementById('multi-alert').innerText = "ฝ่ายที่เลือกสามารถควบได้สูงสุด 2 ตำแหน่งเท่านั้น";
+          }
+        }
+      } else {
+        rank3Select.disabled = false; rank3Reason.disabled = false;
+        document.getElementById('multi-alert').innerText = "";
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      
+      const r1 = document.getElementById('rank1').value;
+      const r2 = document.getElementById('rank2').value;
+      const r3 = document.getElementById('rank3').value;
+      
+      if(r1 && (r1===r2 || r1===r3)) return alert("ห้ามเลือกฝ่ายซ้ำกัน");
+      if(r2 && (r2===r3)) return alert("ห้ามเลือกฝ่ายซ้ำกัน");
+
+      const btn = document.getElementById('reg-submit-btn');
+      btn.innerText = "กำลังประมวลผล..."; btn.disabled = true;
+
+      const payload = {
+        action: "register",
+        project: CURRENT_PROJECT,
+        name: document.getElementById('fullName').value,
+        nickname: document.getElementById('nickName').value,
+        studentId: document.getElementById('stdId').value,
+        year: document.getElementById('year').value,
+        branch: document.getElementById('branch').value,
+        lineId: document.getElementById('lineId').value,
+        phone: document.getElementById('phone').value,
+        addVia: document.querySelector('input[name="addVia"]:checked').value,
+        ig: document.getElementById('ig').value,
+        isMultiRole: document.getElementById('isMultiRole').checked,
+        rank1: r1, reason1: document.getElementById('reason1').value,
+        rank2: r2, reason2: document.getElementById('reason2').value,
+        rank3: r3, reason3: document.getElementById('reason3').value
+      };
+
+      const res = await callAPI(payload);
+      alert(res.message);
+      if(res.status === "success") { e.target.reset(); changePage('landing'); }
+      btn.innerText = "ยืนยันการส่งใบสมัคร"; btn.disabled = false;
+    }
+
+    async function handleStatusCheck(e) {
+      e.preventDefault();
+      const output = document.getElementById('status-output');
+      output.innerHTML = "<div class='text-purple-500 animate-pulse mt-4 text-lg'>กำลังค้นหาข้อมูล...</div>";
+      const res = await callAPI({ action: "check_status", studentId: document.getElementById('searchId').value });
+      output.innerHTML = `<div class="mt-6 p-5 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 text-lg font-medium leading-loose shadow-inner">${res.msg}</div>`;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.innerText = "Authenticating..."; btn.disabled = true;
+
+      const res = await callAPI({ action: "login", userId: document.getElementById('loginUser').value, password: document.getElementById('loginPass').value });
+      
+      if(res.status === "success") { 
+        CURRENT_USER = res.userData;
+        document.getElementById('dash-title').innerText = CURRENT_USER.role === 'admin' ? 'Admin / ประธานโครงการ' : `Head: ${CURRENT_USER.dept}`;
+        e.target.reset(); changePage('dashboard-panel'); fetchDashboardData(); 
+      } else { alert(res.msg); }
+      btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false;
+    }
+
+    // ฟังก์ชันช่วยสร้างแถวตาราง
+    function generateTableRows(dataArray) {
+      if(dataArray.length === 0) return "<tr><td colspan='5' class='p-8 text-center text-slate-400'>ไม่มีข้อมูลในคิวของคุณ</td></tr>";
+      
+      return dataArray.map(item => {
+        let badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-amber-100 text-amber-700 shadow-sm">${item.status}</span>`;
+        if(item.status === 'Accepted') badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-emerald-100 text-emerald-700 shadow-sm">รับแล้ว</span>`;
+        if(item.status === 'Rejected') badge = `<span class="px-3 py-1 text-sm font-semibold rounded-full bg-rose-100 text-rose-700 shadow-sm">ไม่ผ่าน</span>`;
+
+        let actionButtons = "";
+        if(CURRENT_USER.role !== 'admin' && item.status.includes('Pending')) {
+          actionButtons = `
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted')" class="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-emerald-600 transition">รับ</button>
+            <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected')" class="bg-rose-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-rose-600 transition ml-1">ปฏิเสธ</button>
+          `;
+        }
+
+        return `
+          <tr class="border-b bg-white hover:bg-purple-50 transition">
+            <td class="p-4 font-mono text-purple-600">${item.id}</td>
+            <td class="p-4">
+              <p class="font-bold text-slate-700">${item.name}</p>
+              <p class="text-xs text-slate-500 font-semibold mt-1">${item.majorInfo}</p>
+            </td>
+            <td class="p-4">
+              <p class="text-sm font-semibold text-purple-600">${item.rankLabel}</p>
+              <p class="text-xs text-slate-600 max-w-[200px] truncate" title="${item.reason}">${item.reason}</p>
+              <p class="text-[10px] text-slate-400 mt-1">${item.choices}</p>
+            </td>
+            <td class="p-4 text-xs font-mono text-slate-600 space-y-1">
+              <div>📞 ${item.phone}</div>
+              <div class="text-emerald-500">LINE: ${item.lineId}</div>
+              ${item.ig ? `<div>IG: ${item.ig}</div>` : ''}
+            </td>
+            <td class="p-4 text-right whitespace-nowrap">${CURRENT_USER.role === 'admin' || item.status === 'Accepted' ? badge : actionButtons}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function fetchDashboardData() {
+      const container = document.getElementById('dash-table-container');
+      container.innerHTML = "<div class='p-8 text-center text-purple-400 text-lg'>กำลังโหลดข้อมูลจากฐานข้อมูล...</div>";
+
+      const res = await callAPI({ action: "get_dashboard", userId: CURRENT_USER.username });
+      
+      document.getElementById('stat-total').innerText = res.summary.total;
+      document.getElementById('stat-pen').innerText = res.summary.pending;
+      document.getElementById('stat-acc').innerText = res.summary.accepted;
+      document.getElementById('stat-rej').innerText = res.summary.rejected;
+
+      if(res.status === "success") {
+        // ตรวจจับกรณีพิเศษ: ถ้าเป็นหัวหน้าฝ่ายประชาสัมพันธ์และถ่ายภาพ
+        if(CURRENT_USER.dept === "ฝ่ายประชาสัมพันธ์และถ่ายภาพ") {
+          const prData = res.list.filter(d => d.appliedDept === 'ฝ่ายประชาสัมพันธ์');
+          const photoData = res.list.filter(d => d.appliedDept === 'ฝ่ายถ่ายภาพ');
+          
+          container.innerHTML = `
+            <h4 class="font-bold text-slate-700 text-lg mb-2">📸 ตารางที่ 1: ผู้สมัครฝ่ายประชาสัมพันธ์</h4>
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm mb-8">
+              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
+                <tbody>${generateTableRows(prData)}</tbody>
+              </table>
+            </div>
+
+            <h4 class="font-bold text-slate-700 text-lg mb-2">📸 ตารางที่ 2: ผู้สมัครฝ่ายถ่ายภาพ</h4>
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
+                <tbody>${generateTableRows(photoData)}</tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          // ถ้าเป็นฝ่ายอื่นๆ ปกติ (1 ตาราง)
+          container.innerHTML = `
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+              <table class="w-full text-left border-collapse bg-white whitespace-nowrap">
+                <thead class="bg-slate-50 border-b"><tr class="text-sm font-bold text-slate-500"><th class="p-4">รหัสนิสิต</th><th class="p-4">รายชื่อ</th><th class="p-4">รายละเอียดการสมัคร</th><th class="p-4">ติดต่อ</th><th class="p-4 text-right">การพิจารณา</th></tr></thead>
+                <tbody>${generateTableRows(res.list)}</tbody>
+              </table>
+            </div>
+          `;
+        }
+      }
+    }
+
+    async function submitDecision(sheetName, row, decision) {
+      if(!confirm(`ยืนยันการ ${decision} สตาฟคนนี้?`)) return;
+      const res = await callAPI({ action: "update_decision", sheetName, row, decision, dept: CURRENT_USER.dept });
+      if(res.status === "success") fetchDashboardData();
+    }
+  </script>
+
+  <!-- Header -->
+  <header class="bg-white/70 backdrop-blur-md sticky top-0 z-40 border-b border-purple-100 shadow-sm">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center max-w-6xl">
+      <div onclick="changePage('landing')" class="cursor-pointer flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center shadow-md">
           <span class="text-white font-bold text-sm tracking-wider">AHS</span>
         </div>
-        <div class="hidden md:block">
-          <p class="text-sm font-semibold tracking-wide text-white">สโมสรนิสิตคณะสหเวชศาสตร์</p>
-          <p class="text-xs text-purple-200/70 font-light">จุฬาลงกรณ์มหาวิทยาลัย</p>
-        </div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800 hidden sm:block">Staff Recruitment</h1>
       </div>
-      <div class="flex gap-6 text-sm font-medium">
-        <a href="/dashboard.html" class="text-purple-200 hover:text-white transition-colors tracking-wide">Head Portal</a>
-        <a href="/dashboard.html" class="text-purple-200 hover:text-white transition-colors tracking-wide">Admin</a>
+      <div class="space-x-3 flex">
+        <button onclick="changePage('login-page')" class="text-purple-600 font-semibold py-2 px-5 rounded-full hover:bg-purple-50 transition text-sm md:text-base border border-purple-200">Head Portal</button>
+        <button onclick="changePage('login-page')" class="bg-purple-600 text-white font-semibold py-2 px-5 rounded-full hover:bg-purple-700 transition shadow-md text-sm md:text-base">Admin</button>
       </div>
     </div>
-  </nav>
+  </header>
 
-  <!-- Hero Section (Landing) -->
-  <main id="landing-page" class="flex-grow flex flex-col items-center justify-center text-center px-4 pt-20">
-    <div class="max-w-4xl mx-auto fade-in">
-      <p class="text-purple-300 font-medium tracking-[0.3em] uppercase mb-4 text-sm">Join Our Premium Team</p>
-      <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight text-white drop-shadow-2xl">
-        Staff Recruitment <br/>
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300">2026</span>
-      </h1>
-      <p class="text-purple-100/70 text-lg md:text-xl mb-12 font-light max-w-2xl mx-auto">
-        เปิดรับสมัครผู้ร่วมอุดมการณ์เพื่อขับเคลื่อนโครงการระดับคณะ<br class="hidden md:block"> 27 - 31 กรกฎาคม 2569
-      </p>
-
-      <div class="flex flex-col md:flex-row gap-5 justify-center w-full max-w-2xl mx-auto mb-16">
-        <button onclick="openForm('camp')" class="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold text-lg hover:from-purple-500 hover:to-indigo-500 transition-all shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] flex items-center justify-center gap-3 w-full md:w-auto border border-white/10">
-          <span>ค่ายเพื่อนกาวน์ ครั้งที่ 21</span>
+  <!-- Landing Page -->
+  <main id="landing" class="container mx-auto px-4 my-auto py-12 max-w-5xl">
+    <div class="flex flex-col md:flex-row gap-12 items-center justify-between">
+      <div class="space-y-6 text-center md:text-left flex-1">
+        <div class="inline-block px-4 py-2 bg-purple-100 text-purple-700 rounded-full font-semibold text-sm mb-2 shadow-sm border border-purple-200">สโมสรนิสิตคณะสหเวชศาสตร์ จุฬาฯ</div>
+        <h2 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 leading-tight drop-shadow-sm tracking-tight">STAFF<br>RECRUITMENT</h2>
+        <p class="text-slate-600 text-lg md:text-xl font-medium">ร่วมเป็นส่วนหนึ่งของการขับเคลื่อนโครงการระดับคณะ<br><span class="text-fuchsia-600 font-bold">เปิดรับสมัครถึง 31 กรกฎาคม 2569</span></p>
+      </div>
+      
+      <div class="flex flex-col space-y-4 w-full max-w-sm">
+        <button onclick="openForm('camp')" class="btn-menu p-5 font-bold text-lg text-purple-700 flex items-center justify-between group text-left shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl group-hover:scale-110 transition">🏕️</div>
+            <span>สมัครสตาฟ<br><span class="text-sm font-normal text-slate-500">ค่ายเพื่อนกาวน์ ครั้งที่ 21</span></span>
+          </div>
+          <span class="group-hover:translate-x-1 transition">➔</span>
         </button>
-        
-        <button onclick="showQuizModal()" class="group relative px-8 py-4 glass-panel text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3 w-full md:w-auto">
-          <span>ตอบปัญหาวิชาการ ครั้งที่ 2</span>
+
+        <button onclick="openForm('quiz')" class="btn-menu p-5 font-bold text-lg text-fuchsia-700 flex items-center justify-between group text-left shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-fuchsia-100 flex items-center justify-center text-2xl group-hover:scale-110 transition">📝</div>
+            <span>สมัครสตาฟ<br><span class="text-sm font-normal text-slate-500">ตอบปัญหาวิชาการ ครั้งที่ 2</span></span>
+          </div>
+          <span class="group-hover:translate-x-1 transition">➔</span>
+        </button>
+
+        <button onclick="changePage('status-check')" class="btn-menu p-5 font-bold text-lg text-slate-700 flex items-center justify-between group mt-4 border-slate-200 shadow-sm">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-2xl group-hover:scale-110 transition">🔍</div>
+            <span>ตรวจสอบสถานะ</span>
+          </div>
+          <span class="group-hover:translate-x-1 transition">➔</span>
         </button>
       </div>
     </div>
   </main>
 
-  <!-- Application Form Section -->
-  <section id="form-page" class="hidden-section flex-grow pt-28 pb-20 px-4 md:px-8 w-full min-h-screen">
-    <div class="max-w-4xl mx-auto fade-in">
-      <button onclick="goBack()" class="flex items-center gap-2 text-purple-300 hover:text-white transition-colors font-medium mb-8">
-        ← กลับหน้าหลัก
-      </button>
-
-      <div class="glass-panel rounded-3xl p-8 md:p-12">
-        <div class="mb-10 border-b border-white/10 pb-8">
-          <h2 id="form-title" class="text-3xl font-bold text-white tracking-tight">Application Form</h2>
-          <p class="text-purple-200/60 mt-2 font-light">กรุณากรอกข้อมูลให้ครบถ้วนและตรวจสอบความถูกต้องก่อนยืนยัน</p>
+  <!-- Modal แจ้งเตือนตอบปัญหา -->
+  <div id="quiz-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-xl shadow-2xl p-8 border border-purple-100">
+      <h3 class="text-2xl font-bold text-purple-600 mb-4 flex items-center gap-2">⚠️ ชี้แจงการจัดทำข้อสอบ</h3>
+      <div class="text-sm text-slate-600 space-y-3 bg-purple-50 p-5 rounded-2xl border border-purple-100">
+        <p>การแข่งขันตอบปัญหาวิชาการ แบ่งเป็น 4 รอบ ดังนี้:</p>
+        <ul class="list-disc pl-5 space-y-1 text-slate-500">
+          <li>รอบคัดเลือก: ใช้ข้อสอบรายวิชาทั่วไป (เคมี ฟิสิกส์ ชีววิทยา)</li>
+          <li>รอบ 50 / 10 / 5 ทีม: ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
+        </ul>
+        <div class="bg-white p-3 rounded-lg border shadow-sm">
+          <p><strong>📝 ฝ่ายผลิตข้อสอบ:</strong> รับผิดชอบรายวิชาทั่วไป</p>
+          <p><strong>🔬 ฝ่ายวิชาการสาขา:</strong> รับผิดชอบข้อสอบประยุกต์</p>
         </div>
-
-        <form id="staffForm" onsubmit="submitData(event)" class="space-y-10">
-          
-          <!-- Section 1: Personal Info -->
-          <div>
-            <h3 class="text-lg font-medium text-purple-200 mb-6 border-l-2 border-purple-500 pl-3">ข้อมูลส่วนตัว (Personal Information)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">ชื่อ-นามสกุล</label>
-                <input type="text" id="name" required class="w-full premium-input rounded-xl p-3.5">
-              </div>
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">เลขประจำตัวนิสิต</label>
-                <input type="number" id="studentId" required class="w-full premium-input rounded-xl p-3.5" placeholder="ตัวเลข 10 หลัก">
-              </div>
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">สาขาวิชา</label>
-                <select id="branch" required onchange="updateDepartments()" class="w-full premium-input rounded-xl p-3.5">
-                  <option value="">-- เลือกสาขาวิชา --</option>
-                  <option value="MT">เทคนิคการแพทย์ (MT)</option>
-                  <option value="PT">กายภาพบำบัด (PT)</option>
-                  <option value="ND">โภชนาการและการกำหนดอาหาร (ND)</option>
-                  <option value="RT">รังสีเทคนิค (RT)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">เบอร์โทรศัพท์</label>
-                <input type="number" id="phone" required class="w-full premium-input rounded-xl p-3.5" placeholder="0XXXXXXXXX">
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Contact Info -->
-          <div>
-            <h3 class="text-lg font-medium text-purple-200 mb-6 border-l-2 border-purple-500 pl-3">ช่องทางการติดต่อ (Contact Channels)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">LINE ID</label>
-                <input type="text" id="lineId" required class="w-full premium-input rounded-xl p-3.5">
-              </div>
-              <div>
-                <label class="block text-sm text-purple-100/70 mb-2">Instagram <span class="text-purple-100/40 text-xs">(Optional)</span></label>
-                <input type="text" id="ig" class="w-full premium-input rounded-xl p-3.5">
-              </div>
-              <div class="md:col-span-2 bg-black/20 p-5 rounded-xl border border-white/5">
-                <label class="block text-sm text-purple-100/70 mb-4">อนุญาตให้เพิ่มเพื่อนผ่านช่องทางใด</label>
-                <div class="flex gap-8">
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="radio" name="addVia" value="LINE ID" required class="w-4 h-4 accent-purple-500">
-                    <span class="text-sm">LINE ID</span>
-                  </label>
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input type="radio" name="addVia" value="เบอร์โทร" class="w-4 h-4 accent-purple-500">
-                    <span class="text-sm">เบอร์โทรศัพท์</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 3: Department Selection -->
-          <div>
-            <h3 class="text-lg font-medium text-purple-200 mb-6 border-l-2 border-purple-500 pl-3">เลือกฝ่ายที่ประสงค์จะปฏิบัติงาน</h3>
-            <div class="space-y-6">
-              
-              <div class="p-6 rounded-2xl glass-panel border-purple-500/30 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-400 to-orange-500"></div>
-                <div class="flex flex-col md:flex-row gap-5">
-                  <div class="w-full md:w-1/3">
-                    <label class="block text-sm font-semibold text-amber-300 mb-2">อันดับที่ 1 (บังคับ)</label>
-                    <select id="rank1" required class="dept-select w-full premium-input rounded-xl p-3.5"></select>
-                  </div>
-                  <div class="w-full md:w-2/3">
-                    <label class="block text-sm text-purple-100/70 mb-2">เหตุผลที่สมัคร</label>
-                    <input type="text" id="reason1" required class="w-full premium-input rounded-xl p-3.5" placeholder="อธิบายเหตุผลสั้น ๆ เพื่อประกอบการพิจารณา">
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-6 rounded-2xl bg-black/20 border border-white/5">
-                <div class="flex flex-col md:flex-row gap-5">
-                  <div class="w-full md:w-1/3">
-                    <label class="block text-sm text-purple-100/70 mb-2">อันดับที่ 2 (ไม่บังคับ)</label>
-                    <select id="rank2" class="dept-select w-full premium-input rounded-xl p-3.5"></select>
-                  </div>
-                  <div class="w-full md:w-2/3">
-                    <label class="block text-sm text-purple-100/70 mb-2">เหตุผลที่สมัคร</label>
-                    <input type="text" id="reason2" class="w-full premium-input rounded-xl p-3.5">
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-6 rounded-2xl bg-black/20 border border-white/5">
-                <div class="flex flex-col md:flex-row gap-5">
-                  <div class="w-full md:w-1/3">
-                    <label class="block text-sm text-purple-100/70 mb-2">อันดับที่ 3 (ไม่บังคับ)</label>
-                    <select id="rank3" class="dept-select w-full premium-input rounded-xl p-3.5"></select>
-                  </div>
-                  <div class="w-full md:w-2/3">
-                    <label class="block text-sm text-purple-100/70 mb-2">เหตุผลที่สมัคร</label>
-                    <input type="text" id="reason3" class="w-full premium-input rounded-xl p-3.5">
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- Submit -->
-          <div class="pt-8 border-t border-white/10 flex justify-end">
-            <button type="submit" id="submitBtn" class="w-full md:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-4 px-10 rounded-xl hover:from-purple-500 hover:to-indigo-500 transition-all shadow-[0_0_20px_rgba(147,51,234,0.4)] tracking-wide">
-              ยืนยันการส่งใบสมัคร
-            </button>
-          </div>
-        </form>
+        <p class="text-fuchsia-600 font-semibold">* หากต้องการจัดทำทั้ง 2 ส่วน ให้เลือกลงสมัครทั้ง "ฝ่ายผลิตข้อสอบ" และ "ฝ่ายวิชาการ" ควบคู่กัน</p>
       </div>
-    </div>
-  </section>
-
-  <!-- Modal -->
-  <div id="quiz-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden-section z-[60] px-4">
-    <div class="glass-panel rounded-3xl p-8 w-full max-w-2xl border border-purple-500/30">
-      <h2 class="text-2xl font-bold text-amber-300 mb-6 flex items-center gap-3">
-        ⚠️ ชี้แจงการจัดทำข้อสอบ
-      </h2>
-      <div class="text-sm text-purple-100/80 space-y-4 mb-8 bg-black/30 p-6 rounded-2xl h-64 overflow-y-auto">
-        <p>การแข่งขันแบ่งออกเป็น 4 รอบ ดังนี้:</p>
-        <ol class="list-decimal pl-5 space-y-2">
-          <li>รอบคัดเลือก: ใช้ข้อสอบรายวิชาทั่วไป</li>
-          <li>รอบ 50 ทีม: ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
-          <li>รอบ 10 ทีม: ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
-          <li>รอบชิงชนะเลิศ 5 ทีม: ใช้ข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
-        </ol>
-        <div class="mt-4 p-4 border-l-2 border-purple-500 bg-purple-900/20">
-          <ul class="list-disc pl-5 mt-2 space-y-2">
-            <li><strong>ฝ่ายผลิตข้อสอบ:</strong> รับผิดชอบรายวิชาทั่วไป</li>
-            <li><strong>ฝ่ายวิชาการสาขา:</strong> รับผิดชอบข้อสอบประยุกต์เชิงสหเวชศาสตร์</li>
-          </ul>
-          <p class="text-amber-300 font-medium mt-4 text-xs">
-            * หากประสงค์ทำทั้ง 2 ส่วน ให้ลงสมัครทั้ง "ฝ่ายผลิตข้อสอบ" และ "ฝ่ายวิชาการ" ควบคู่กัน
-          </p>
-        </div>
-      </div>
-      <div class="flex gap-4 justify-end">
-        <button onclick="closeQuizModal()" class="px-6 py-3 rounded-xl font-medium text-purple-200 hover:bg-white/5 transition-colors">ยกเลิก</button>
-        <button onclick="acceptQuizAndOpenForm()" class="px-6 py-3 rounded-xl font-medium bg-purple-600 text-white hover:bg-purple-500 transition-colors shadow-lg">รับทราบและดำเนินการต่อ</button>
+      <div class="flex justify-end gap-3 mt-6">
+        <button onclick="document.getElementById('quiz-modal').classList.add('hidden')" class="px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-100 transition">ยกเลิก</button>
+        <button onclick="proceedToForm()" class="px-5 py-2.5 rounded-xl font-medium bg-purple-600 text-white hover:bg-purple-700 shadow-md transition">รับทราบและดำเนินการต่อ</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzb6-O58UbtwJUtwKi8QUXQN-QVwDgVskiTuEhc2xoyEaxQOPhdGzuQIu8jME4KKgOm/exec';
-    // Logic Javascript เหมือนเดิม (copy จากเวอร์ชันก่อนหน้ามาใส่ได้เลย)
-    let currentProject = '';
-    const depts = {
-      camp: ['ฝ่ายบรรณาธิการ', 'ฝ่ายสิทธิประโยชน์', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายเสื้อ', 'ฝ่ายของที่ระลึกและขายของ', 'ฝ่ายศิลป์', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายประสาน', 'ฝ่ายบายศรี', 'ฝ่ายสถานที่', 'ฝ่ายรักษาความปลอดภัยและ VR', 'ฝ่ายแสงเสียง', 'ฝ่ายสวัสดิการ', 'ฝ่ายพี่บ้าน', 'ฝ่ายกิจกรรมและเนื้อหา', 'ฝ่ายพยาบาล', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'],
-      quiz: ['ฝ่ายสิทธิประโยชน์', 'ฝ่ายบรรณาธิการ', 'ฝ่ายพิธีการ', 'ฝ่าย AP Timer', 'ฝ่ายพัสดุ', 'ฝ่ายประชาสัมพันธ์', 'ฝ่ายถ่ายภาพ', 'ฝ่ายทะเบียนและบัตร', 'ฝ่ายรับสมัคร', 'ฝ่ายรางวัลและของที่ระลึก', 'ฝ่ายสวัสดิการและพยาบาล', 'ฝ่ายสถานที่', 'ฝ่ายแสงเสียง', 'ฝ่ายปฏิคม', 'ฝ่ายนิทรรศการ', 'ฝ่ายออกแบบการแข่งขัน', 'ฝ่ายคุมสอบและตรวจข้อสอบ', 'ฝ่ายผลิตข้อสอบ', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT']
-    };
+  <!-- Form Page -->
+  <div id="register-form" class="hidden container mx-auto px-4 py-10 max-w-3xl">
+    <div class="glass-card p-8 md:p-10">
+      <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับหน้าแรก</button>
+      <div class="border-b-2 border-purple-100 pb-5 mb-8">
+        <h3 class="text-3xl font-bold text-slate-800">กรอกใบสมัครสตาฟ</h3>
+        <p id="form-title-text" class="text-purple-600 font-medium mt-1">โครงการ...</p>
+      </div>
 
-    function showQuizModal() { document.getElementById('quiz-modal').classList.remove('hidden-section'); }
-    function closeQuizModal() { document.getElementById('quiz-modal').classList.add('hidden-section'); }
-    function acceptQuizAndOpenForm() { closeQuizModal(); openForm('quiz'); }
-    
-    function openForm(project) {
-      currentProject = project;
-      document.getElementById('landing-page').classList.add('hidden-section');
-      document.getElementById('form-page').classList.remove('hidden-section');
-      document.getElementById('form-title').innerText = project === 'camp' ? 'ค่ายเพื่อนกาวน์ ครั้งที่ 21' : 'ตอบปัญหาวิชาการ ครั้งที่ 2';
-      updateDepartments();
-      window.scrollTo(0, 0);
-    }
+      <form onsubmit="handleRegister(event)" class="space-y-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2 flex gap-4">
+            <div class="w-1/2"><label class="text-sm font-bold text-slate-700 ml-1">ชื่อ - นามสกุล <span class="text-red-500">*</span></label><input type="text" id="fullName" required class="input-field"></div>
+            <div class="w-1/2"><label class="text-sm font-bold text-slate-700 ml-1">ชื่อเล่น <span class="text-red-500">*</span></label><input type="text" id="nickName" required class="input-field"></div>
+          </div>
+          <div><label class="text-sm font-bold text-slate-700 ml-1">รหัสนิสิต 10 หลัก <span class="text-red-500">*</span></label><input type="number" id="stdId" required class="input-field font-mono"></div>
+          <div class="flex gap-4">
+            <div class="w-1/2">
+              <label class="text-sm font-bold text-slate-700 ml-1">สาขา <span class="text-red-500">*</span></label>
+              <select id="branch" required onchange="setupDropdowns()" class="input-field">
+                <option value="" disabled selected>-</option><option value="MT">MT</option><option value="PT">PT</option><option value="ND">ND</option><option value="RT">RT</option>
+              </select>
+            </div>
+            <div class="w-1/2">
+              <label class="text-sm font-bold text-slate-700 ml-1">ชั้นปี <span class="text-red-500">*</span></label>
+              <select id="year" required class="input-field">
+                <option value="" disabled selected>-</option><option value="1">ปี 1</option><option value="2">ปี 2</option><option value="3">ปี 3</option><option value="4">ปี 4</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="text-sm font-bold text-slate-700 ml-1">เบอร์ติดต่อ <span class="text-red-500">*</span></label><input type="number" id="phone" required class="input-field font-mono"></div>
+        </div>
 
-    function goBack() {
-      document.getElementById('form-page').classList.add('hidden-section');
-      document.getElementById('landing-page').classList.remove('hidden-section');
-      window.scrollTo(0, 0);
-    }
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          <div><label class="text-sm font-bold text-slate-700 ml-1">LINE ID <span class="text-red-500">*</span></label><input type="text" id="lineId" required class="input-field"></div>
+          <div><label class="text-sm font-bold text-slate-700 ml-1">IG Account (Optional)</label><input type="text" id="ig" class="input-field"></div>
+          <div class="md:col-span-2">
+            <label class="text-sm font-bold text-slate-700 ml-1 mb-2 block">อนุญาตให้เพิ่มเพื่อนผ่านช่องทางใด <span class="text-red-500">*</span></label>
+            <div class="flex gap-6 pl-2">
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="LINE ID" required class="accent-purple-500 w-4 h-4"> LINE ID</label>
+              <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="addVia" value="เบอร์โทร" class="accent-purple-500 w-4 h-4"> เบอร์โทรศัพท์</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-6 rounded-2xl border-2 border-purple-200 bg-white shadow-sm space-y-4">
+          <div class="flex justify-between items-center border-b pb-4">
+            <h4 class="font-bold text-purple-700 text-lg">การเลือกฝ่ายปฏิบัติงาน</h4>
+            <label class="flex items-center gap-2 cursor-pointer bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 hover:bg-purple-100 transition">
+              <input type="checkbox" id="isMultiRole" onchange="validateRolesLimit()" class="accent-purple-500 w-5 h-5"> 
+              <span class="font-bold text-purple-700 text-sm">สนใจควบฝ่าย (ปฏิบัติงานหลายตำแหน่ง)</span>
+            </label>
+          </div>
+          
+          <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 space-y-2">
+            <div><label class="text-base font-bold text-purple-700 ml-1">อันดับที่ 1 (บังคับ)</label><select id="rank1" required onchange="validateRolesLimit()" class="input-field font-medium"></select></div>
+            <div><label class="text-sm font-bold text-slate-600 ml-1">เหตุผลประกอบการสมัคร</label><input type="text" id="reason1" required class="input-field"></div>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+            <div><label class="text-base font-bold text-slate-700 ml-1">อันดับที่ 2</label><select id="rank2" onchange="validateRolesLimit()" class="input-field"></select></div>
+            <div><label class="text-sm font-bold text-slate-500 ml-1">เหตุผลประกอบการสมัคร</label><input type="text" id="reason2" class="input-field"></div>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+            <div><label class="text-base font-bold text-slate-700 ml-1">อันดับที่ 3</label><select id="rank3" class="input-field"></select></div>
+            <div><label class="text-sm font-bold text-slate-500 ml-1">เหตุผลประกอบการสมัคร</label><input type="text" id="reason3" class="input-field"></div>
+            <p id="multi-alert" class="text-sm text-fuchsia-600 font-semibold mt-2 ml-1"></p>
+          </div>
+        </div>
 
-    function updateDepartments() {
-      const branch = document.getElementById('branch').value;
-      const selects = document.querySelectorAll('.dept-select');
-      selects.forEach((select, index) => {
-        select.innerHTML = index === 0 ? '<option value="">-- ระบุฝ่าย --</option>' : '<option value="">-- ไม่ประสงค์สมัคร --</option>';
-        depts[currentProject].forEach(dept => {
-          if (dept.includes('วิชาการ')) {
-            if (branch && dept.includes(branch)) select.innerHTML += `<option value="${dept}">${dept}</option>`;
-          } else { select.innerHTML += `<option value="${dept}">${dept}</option>`; }
-        });
-      });
-    }
+        <button type="submit" id="reg-submit-btn" class="w-full btn-primary text-xl py-4 mt-4">ยืนยันการส่งใบสมัคร</button>
+      </form>
+    </div>
+  </div>
 
-    function submitData(e) {
-      e.preventDefault();
-      const submitBtn = document.getElementById('submitBtn');
-      const originalText = submitBtn.innerText;
-      submitBtn.innerText = 'กำลังประมวลผล...';
-      submitBtn.disabled = true;
+  <!-- Status Check Page -->
+  <div id="status-check" class="hidden container mx-auto px-4 py-12 max-w-lg">
+    <div class="glass-card p-10 text-center">
+      <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับ</button>
+      <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">🔍</div>
+      <h3 class="text-2xl font-bold text-slate-800 mb-6">ตรวจสอบสถานะ</h3>
+      <form onsubmit="handleStatusCheck(event)" class="space-y-4">
+        <input type="number" id="searchId" required placeholder="กรอกรหัสนิสิต 10 หลัก" class="input-field text-center text-xl font-semibold py-4">
+        <button type="submit" class="w-full btn-primary py-3">ค้นหาข้อมูล</button>
+      </form>
+      <div id="status-output"></div>
+    </div>
+  </div>
 
-      const payload = {
-        action: 'submitForm',
-        payload: {
-          project: currentProject,
-          name: document.getElementById('name').value,
-          studentId: document.getElementById('studentId').value,
-          branch: document.getElementById('branch').value,
-          phone: document.getElementById('phone').value,
-          lineId: document.getElementById('lineId').value,
-          addVia: document.querySelector('input[name="addVia"]:checked').value,
-          ig: document.getElementById('ig').value,
-          rank1: document.getElementById('rank1').value,
-          reason1: document.getElementById('reason1').value,
-          rank2: document.getElementById('rank2').value,
-          reason2: document.getElementById('reason2').value,
-          rank3: document.getElementById('rank3').value,
-          reason3: document.getElementById('reason3').value,
-        }
-      };
+  <!-- Login Page -->
+  <div id="login-page" class="hidden container mx-auto px-4 py-12 max-w-md">
+    <div class="glass-card p-10">
+      <button onclick="changePage('landing')" class="text-slate-400 hover:text-purple-500 font-medium mb-6 flex items-center transition">← ย้อนกลับ</button>
+      <h3 class="text-2xl font-bold text-slate-800 text-center mb-2">System Portal</h3>
+      <p class="text-center text-slate-500 text-sm mb-8">สำหรับ Head ฝ่าย และ Admin</p>
+      
+      <form onsubmit="handleLogin(event)" class="space-y-5">
+        <div><label class="text-sm font-bold text-slate-600 ml-1">Username</label><input type="text" id="loginUser" required class="input-field text-lg text-center font-mono"></div>
+        <div><label class="text-sm font-bold text-slate-600 ml-1">Password</label><input type="password" id="loginPass" required class="input-field text-lg text-center tracking-widest"></div>
+        <button type="submit" id="login-btn" class="w-full bg-slate-800 text-white font-semibold py-3.5 rounded-xl hover:bg-slate-900 transition shadow-lg mt-4 text-lg">เข้าสู่ระบบ</button>
+      </form>
+    </div>
+  </div>
 
-      fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) { alert('ส่งใบสมัครสำเร็จ!'); document.getElementById('staffForm').reset(); goBack(); }
-        else { alert('เกิดข้อผิดพลาด: ' + data.message); }
-      }).finally(() => { submitBtn.innerText = originalText; submitBtn.disabled = false; });
-    }
-  </script>
+  <!-- Dashboard Panel -->
+  <div id="dashboard-panel" class="hidden container mx-auto px-4 py-8 max-w-7xl">
+    <div class="glass-card p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-purple-100 pb-6 mb-8 gap-4">
+        <div>
+          <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-500" id="dash-title">Dashboard</h2>
+          <p class="text-base text-slate-500 mt-1">ระบบคัดเลือกสตาฟส่วนกลาง</p>
+        </div>
+        <button onclick="CURRENT_USER=null; changePage('landing')" class="text-sm font-bold text-rose-500 bg-rose-50 px-5 py-2.5 rounded-full hover:bg-rose-100 transition border border-rose-200">ออกจากระบบ</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-slate-50 p-5 rounded-2xl text-center border shadow-sm"><p class="text-sm text-slate-500 font-bold mb-1">ยอดสมัครทั้งหมด</p><p id="stat-total" class="text-3xl font-black text-slate-700">0</p></div>
+        <div class="bg-amber-50 p-5 rounded-2xl text-center border border-amber-100 shadow-sm"><p class="text-sm text-amber-600 font-bold mb-1">รอพิจารณา</p><p id="stat-pen" class="text-3xl font-black text-amber-700">0</p></div>
+        <div class="bg-emerald-50 p-5 rounded-2xl text-center border border-emerald-100 shadow-sm"><p class="text-sm text-emerald-600 font-bold mb-1">รับแล้ว</p><p id="stat-acc" class="text-3xl font-black text-emerald-700">0</p></div>
+        <div class="bg-rose-50 p-5 rounded-2xl text-center border border-rose-100 shadow-sm"><p class="text-sm text-rose-500 font-bold mb-1">ไม่ผ่าน</p><p id="stat-rej" class="text-3xl font-black text-rose-600">0</p></div>
+      </div>
+
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="font-bold text-slate-700 text-lg">📋 รายชื่อผู้สมัครในความดูแล</h4>
+        <button onclick="fetchDashboardData()" class="text-sm font-bold text-purple-600 bg-purple-50 px-4 py-2 rounded-lg hover:bg-purple-100">🔄 รีเฟรช</button>
+      </div>
+      
+      <!-- ตำแหน่งนี้คือส่วนที่จะถูกสร้างตารางโดย Javascript แบบไดนามิก -->
+      <div id="dash-table-container"></div>
+      
+    </div>
+  </div>
+
+  <footer class="py-6 text-center text-sm font-medium text-slate-400 mt-auto">
+    &copy; 2026 สโมสรนิสิตคณะสหเวชศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย
+  </footer>
+
 </body>
 </html>
