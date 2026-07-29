@@ -247,20 +247,30 @@
     function generateHeadPendingRows(dataArray) {
       if(dataArray.length === 0) return `<tr><td colspan="4" class="py-12 text-center text-slate-400 font-medium">🎉 ไม่พบสตาฟที่รอคิวการพิจารณาในขณะนี้</td></tr>`;
       
-      return dataArray.map(item => `
+      return dataArray.map(item => {
+        // จัด Format รายชื่อฝ่ายให้ดูง่ายขึ้น (ขึ้นบรรทัดใหม่ทุกอันดับ)
+        let allChoicesFormatted = item.choices.replace(/ \| /g, '<br>');
+        
+        return `
         <tr class="border-b bg-white hover:bg-slate-50 transition">
           <td class="p-4">
             <p class="font-bold text-slate-700">${item.name} (${item.nickname})</p>
             <p class="text-xs text-slate-500 font-semibold mt-1">ID: ${item.id} | ${item.majorInfo}</p>
           </td>
-          <td class="p-4 font-bold text-fuchsia-600">${item.rankLabel}</td>
+          <td class="p-4">
+            <div class="font-bold text-fuchsia-600 mb-1.5">${item.rankLabel}</div>
+            <!-- ส่วนที่เพิ่มใหม่: กล่องแสดงประวัติการเลือกฝ่ายทั้งหมด -->
+            <div class="text-[11px] text-slate-600 font-medium leading-relaxed bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-lg inline-block whitespace-nowrap">
+              ${allChoicesFormatted}
+            </div>
+          </td>
           <td class="p-4 text-sm text-slate-600 whitespace-normal min-w-[200px] max-w-[300px]">${item.reason}</td>
           <td class="p-4 text-right whitespace-nowrap">
             <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Accepted', '${item.appliedDept}')" class="bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition shadow-sm">รับ</button>
             <button onclick="submitDecision('${item.sheetName}', ${item.rowNumber}, 'Rejected', '${item.appliedDept}')" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-rose-600 transition shadow-sm ml-2">ปฏิเสธ</button>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
     }
 
     // ฟังก์ชันส่งสถานะการรับเข้า
