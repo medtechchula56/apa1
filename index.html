@@ -47,12 +47,33 @@
     
     const QUIZ_3_ROLES_ALLOWED = ['ฝ่ายออกแบบการแข่งขัน', 'ฝ่ายคุมสอบและตรวจข้อสอบ', 'ฝ่ายผลิตข้อสอบ', 'ฝ่ายวิชาการ MT', 'ฝ่ายวิชาการ PT', 'ฝ่ายวิชาการ ND', 'ฝ่ายวิชาการ RT'];
 
-    async function callAPI(payload) {
-      try {
-        const response = await fetch(GAS_URL, { method: "POST", headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-        return await response.json();
-      } catch (error) {
-        alert("เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้ง");
+    // 🚀 เพิ่มระบบ Auto-Retry ลองส่งข้อมูลใหม่ 3 ครั้ง หากคิวเซิร์ฟเวอร์เต็ม
+    async function callAPI(payload, retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(GAS_URL, { 
+            method: "POST", 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            body: JSON.stringify(payload) 
+          });
+          const res = await response.json();
+          
+          // ถ้า Server ติด Lock (รอคิว) ให้หน่วงเวลา 2 วิ แล้วลองใหม่
+          if (res.status === "error" && (res.message || res.msg || "").includes("ผู้ใช้งานหนาแน่น")) {
+            if (i < retries - 1) {
+              await new Promise(r => setTimeout(r, 2000));
+              continue;
+            }
+          }
+          return res;
+        } catch (error) {
+          // ถ้า Network พัง ให้ลองใหม่
+          if (i < retries - 1) {
+            await new Promise(r => setTimeout(r, 2000));
+          } else {
+            return { status: "error", message: "เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้ง", msg: "เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้ง" };
+          }
+        }
       }
     }
 
@@ -201,7 +222,7 @@
       btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false;
     }
 
-    // สร้างตารางสำหรับ Admin (เหมือนเดิม)
+    // สร้างตารางสำหรับ Admin
     function generateAdminTableRows(dataArray) {
       if(dataArray.length === 0) return `<tr><td colspan="6" class='p-8 text-center text-slate-400'>ไม่มีข้อมูลในระบบ</td></tr>`;
       
@@ -242,11 +263,10 @@
       `).join('');
     }
 
-    // ฟังก์ชันรับพารามิเตอร์ appliedDept แล้วส่งกลับไปที่ Code.gs
+    // ฟังก์ชันส่งสถานะการรับเข้า
     async function submitDecision(sheetName, row, decision, appliedDept) {
       if(!confirm(`ยืนยันการ ${decision === 'Accepted' ? 'รับ' : 'ปฏิเสธ'} สตาฟคนนี้?`)) return;
       
-      // ส่ง appliedDept ไปแทน CURRENT_USER.dept
       const res = await callAPI({ action: "update_decision", sheetName, row, decision, dept: appliedDept });
       
       if(res.status === "success") fetchDashboardData();
@@ -273,10 +293,7 @@
 
     // ฟังก์ชันช่วยสร้าง Section ตาราง 2 ส่วน (รอพิจารณา + รับแล้ว) สำหรับ Head
     function generateHeadSectionHtml(fullDataArray, deptName) {
-      // 1. รอพิจารณา: ต้องสมัครฝ่ายนี้ และสถานะเป็น Pending
       const pendingData = fullDataArray.filter(d => d.appliedDept === deptName && d.status === 'Pending');
-      
-      // 2. รับแล้ว: ต้องเช็กว่าในรายชื่อฝ่ายที่รับ (acceptedDepts) มีฝ่ายนี้อยู่จริงๆ (แก้บัคชื่อโผล่ซ้ำ 2 ตาราง)
       const acceptedData = fullDataArray.filter(d => d.status === 'Accepted' && d.acceptedDepts && d.acceptedDepts.includes(deptName));
       
       let html = `
@@ -317,7 +334,7 @@
         GLOBAL_ADMIN_DATA = res.list;
 
         if (CURRENT_USER.role === 'admin') {
-          // ================= ADMIN VIEW (หน้าตาเดิม) =================
+          // ================= ADMIN VIEW =================
           let html = `
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div class="bg-slate-800 text-white p-6 rounded-2xl text-center shadow-md"><p class="text-sm font-semibold opacity-80 mb-1">ยอดผู้สมัครรวม</p><p class="text-4xl font-black">${res.summary.total}</p></div>
@@ -355,9 +372,8 @@
           container.innerHTML = html;
 
         } else {
-          // ================= HEAD VIEW (ปรับใหม่ 6 สถิติ + แยกตาราง 2 ส่วน) =================
+          // ================= HEAD VIEW =================
           let html = `
-            <!-- สถิติ 6 ช่องแบบใหม่ -->
             <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8">
               <div class="bg-white border border-slate-200 p-5 rounded-2xl text-center shadow-sm hover:shadow-md transition">
                 <p class="text-[11px] font-bold text-slate-600 mb-1">คนสมัครรวมทั้งค่าย</p><p class="text-3xl font-black text-slate-800">${res.summary.head.totalProject}</p>
@@ -381,11 +397,9 @@
             <hr class="border-fuchsia-100 mb-8">
           `;
 
-          // ตารางข้อมูล (รองรับกรณี PR & Photo ควบ 2 ฝ่ายด้วย)
           if (CURRENT_USER.dept === "ฝ่ายประชาสัมพันธ์และถ่ายภาพ") {
-             // แก้ไขแล้ว: ให้ส่ง res.list เต็มๆ ไปให้ฟังก์ชันกรองเอง
              html += generateHeadSectionHtml(res.list, 'ฝ่ายประชาสัมพันธ์');
-             html += `<div class="my-12"></div>`; // เว้นระยะ
+             html += `<div class="my-12"></div>`;
              html += generateHeadSectionHtml(res.list, 'ฝ่ายถ่ายภาพ');
           } else {
              html += generateHeadSectionHtml(res.list, CURRENT_USER.dept);
@@ -396,7 +410,6 @@
       }
     }
 
-    // ฟังก์ชันเปิด Modal สำหรับ Admin
     function openDeptModal(project, deptName) {
       const modal = document.getElementById('dept-modal');
       const title = document.getElementById('modal-dept-title');
@@ -433,7 +446,6 @@
   <header class="bg-white/70 backdrop-blur-md sticky top-0 z-30 border-b border-purple-100 shadow-sm">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center max-w-6xl">
       
-      <!-- ส่วนที่ถูกแก้ไข: ลบโลโก้ออก และลบ hidden sm:block ออกจาก h1 -->
       <div onclick="changePage('landing')" class="cursor-pointer flex items-center">
         <h1 class="text-xl md:text-2xl font-bold text-slate-800">Academic & Professional Affairs</h1>
       </div>
